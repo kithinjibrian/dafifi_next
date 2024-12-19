@@ -44,8 +44,9 @@ jobs:
           action: "upload"
           app_location: "/"
           api_location: ""
-          output_location: "build"
-          skip_app_build: true  # Since we've already built the app
+          output_location: ".next"  # Changed from 'build' to '.next'
+          app_build_command: "npm run build"  # Explicitly specify the build command
+          skip_app_build: false  # Let Azure handle the build process
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
