@@ -1,8 +1,26 @@
-import Image from "next/image";
+import { Footer } from "@/components/home/footer";
+import { HeroSection } from "@/components/home/hero-section";
+import { MainHeader } from "@/components/home/main-header";
+import { NewsletterSignup } from "@/components/home/newsletter";
+import { WorkflowShowcase } from "@/components/home/workflow";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    return (
+        <div>
+            <MainHeader />
+            <main>
+                <HeroSection />
+                <WorkflowShowcase />
+                <NewsletterSignup />
+            </main>
+            <Footer />
+        </div>
+    );
+}
+
+
+/*
+<div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
         <Image
           className="dark:invert"
@@ -97,5 +115,4 @@ export default function Home() {
         </a>
       </footer>
     </div>
-  );
-}
+*/
