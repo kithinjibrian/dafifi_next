@@ -28,7 +28,7 @@ export const HeroSection = () => {
                 <div className="space-y-6">
                     <div className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
                         <Hourglass className="inline-block mr-2 -mt-1" size={20} />
-                        Powerful tools that save you time — so you can conquer the world.
+                        Powerful low-code automation tools that save you time.
                     </div>
 
                     <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground">
