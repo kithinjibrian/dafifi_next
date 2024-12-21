@@ -7,7 +7,7 @@ export const WorkflowShowcase = () => {
                     <span className="block text-primary">Into Simple Flows</span>
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                    Visualize, connect, and automate your entire business logic with our intuitive drag-and-drop flow builder. Connect apps, database tables, and APIs seamlessly.
+                    Visualize, connect, and automate your entire business logic with our intuitive drag-and-drop flow builder. Connect apps and APIs seamlessly.
                 </p>
             </div>
 

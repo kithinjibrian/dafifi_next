@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input"
 import { useAuthStore } from "@/store/auth";
 import { request } from "@/utils/request"
 import { TypingAnimation } from "@/components/utils/type-animation"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const formSchema = z.object({
     username: z.string().min(2).max(20),
@@ -34,6 +35,7 @@ const formSchema = z.object({
 })
 
 export default function Signup() {
+    const isMobile = useIsMobile();
     const { login } = useAuthStore();
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -60,14 +62,16 @@ export default function Signup() {
 
     return (
         <div className="flex h-screen w-full">
-            <div className="drop-shadow-md w-3/4 bg-gradient-to-r from-sky-800 to-sky-500">
-                <div className="h-[60%] flex items-center">
-                    <TypingAnimation
-                        text={message}
-                    />
+            {!isMobile && (
+                <div className="drop-shadow-md w-3/4 bg-gradient-to-r from-sky-800 to-sky-500">
+                    <div className="h-[60%] flex items-center">
+                        <TypingAnimation
+                            text={message}
+                        />
+                    </div>
                 </div>
-            </div>
-            <div className="flex items-center justify-center w-1/4">
+            )}
+            <div className="flex items-center justify-center w-full md:w-1/4">
                 <div className="max-w-md">
                     <div className="text-3xl font-bold">Welcome to Dafifi</div>
                     <Form {...form}>

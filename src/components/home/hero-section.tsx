@@ -37,7 +37,7 @@ export const HeroSection = () => {
                     </h1>
 
                     <p className="text-lg text-muted-foreground max-w-xl">
-                        Create apps, automation workflows, and APIs in seconds with our powerful no-code tools — saving you time without sacrificing control or flexibility.
+                        Create automation workflows and APIs in seconds with our powerful no-code tools — saving you time without sacrificing control or flexibility.
                     </p>
 
                     <div className="flex space-x-4">

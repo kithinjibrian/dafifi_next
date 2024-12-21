@@ -53,12 +53,12 @@ export const Footer = () => {
                             <span className="text-2xl font-bold">Dafifi</span>
                         </div>
                         <p className="text-muted-foreground">
-                            Transforming complex workflows into simple, intuitive solutions that empower your business.
+                            Automate Now, Every Second Matters.
                         </p>
                     </div>
 
                     {/* Footer Links */}
-                    <div className="md:col-span-8 grid grid-cols-3 gap-8">
+                    <div className="md:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-8">
                         {FooterLinks.map((section, idx) => (
                             <div key={idx}>
                                 <h4 className="font-semibold mb-4 text-foreground">{section.title}</h4>

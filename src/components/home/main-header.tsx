@@ -1,9 +1,13 @@
+"use client"
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { NavigationBar } from "./main-nav-bar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const MainHeader = () => {
+    const isMobile = useIsMobile();
     return (
         <div className="flex items-center justify-between border-b px-2">
             <div className="flex items-center">
@@ -18,7 +22,7 @@ export const MainHeader = () => {
                         Dafifi
                     </div>
                 </Link>
-                <NavigationBar />
+                {!isMobile && <NavigationBar />}
             </div>
             <div>
                 <Link href="/user/login">

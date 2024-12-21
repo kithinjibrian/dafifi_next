@@ -76,7 +76,7 @@ export const Struct = ({ store, struct, onSelectNode }) => {
     const handleSelectNode = useCallback(() => {
         onSelectNode({
             type: "struct/tostruct",
-            data: { spec: createToStruct(struct.name.split(" ")[1]) },
+            data: { spec: createToStruct(struct.name.split(" ").slice(1).join(" ") || "") },
         });
     }, [onSelectNode, struct.name]);
 
@@ -97,7 +97,7 @@ export const Struct = ({ store, struct, onSelectNode }) => {
                     onBlur={handleNameChange}
                 >
                     <Circle strokeWidth={0} className="mr-1.5" style={{ fill: struct.color }} />
-                    {struct.name.split(" ")[1]}
+                    {struct.name.split(" ").slice(1).join(" ") || ""}
                 </div>
                 <div className={`flex items-center transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"}`}>
                     <Button

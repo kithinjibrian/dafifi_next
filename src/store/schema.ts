@@ -21,7 +21,7 @@ export interface Schema {
 export interface SchemaStoreDTO {
     schemas: Schema[];
     rawSchemas: any[];
-    createSchema: (data: any) => Promise<void>;
+    createSchema: (data: any) => Promise<Schema>;
     fetchSchemas: (projectId: number) => Promise<void>;
     fetchSchema: (id: number) => Promise<void>;
     renameSchema: (data: any) => Promise<void>;
@@ -78,6 +78,7 @@ export const createSchemaSlice: StateCreator<
         try {
             const response = await request.post(`/table/create`, data);
             set({ schemas: [...get().schemas, response.data] });
+            return response.data;
         } catch (e) {
             report_error(e);
         }

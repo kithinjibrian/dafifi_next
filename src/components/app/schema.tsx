@@ -34,37 +34,44 @@ export const Schemas = () => {
         }
     }, [editableIndex]);
 
+    const createTable = async () => {
+        if (!project) return;
+
+        try {
+            const schema = await createSchema({
+                projectId: +project.id,
+                tableName: `NewTable${schemas.length}`,
+                tableSchema: [
+                    {
+                        columnName: "id",
+                        dataType: "string",
+                        constraints: {
+                            primaryKey: true,
+                            primaryKeyStrategy: "uuid"
+                        }
+                    }
+                ]
+            });
+
+            addTab({
+                id: schema.id,
+                uuid: getUUID(schema.id),
+                name: schema.tableName,
+                ext: "tab",
+                type: "table"
+            })
+
+        } catch (e) {
+
+        }
+    }
+
     return (
         <div className="h-full w-full">
             <div className="p-2 border-b flex items-center justify-center">
                 <Button
                     className="bg-sky-500 text-foreground"
-                    onClick={async () => {
-                        if (!project) return;
-
-                        await createSchema({
-                            projectId: +project.id,
-                            tableName: `New Table${schemas.length}`,
-                            tableSchema: [
-                                {
-                                    columnName: "id",
-                                    dataType: "string",
-                                    constraints: {
-                                        primaryKey: true,
-                                        primaryKeyStrategy: "uuid"
-                                    }
-                                }
-                            ]
-                        });
-
-                        addTab({
-                            id: -3,
-                            uuid: nanoid(),
-                            name: "New Table",
-                            ext: "tab",
-                            type: "table"
-                        })
-                    }}>
+                    onClick={() => createTable()}>
                     New Table
                 </Button>
             </div>

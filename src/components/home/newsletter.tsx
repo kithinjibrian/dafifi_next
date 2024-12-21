@@ -55,7 +55,7 @@ export const NewsletterSignup = () => {
                     />
                     <Button
                         type="submit"
-                        className="mt-3 sm:mt-0 sm:ml-3 w-full sm:w-auto"
+                        className="bg-sky-500 mt-3 sm:mt-0 sm:ml-3 w-full sm:w-auto"
                         disabled={isLoading}
                     >
                         {isLoading ? (
