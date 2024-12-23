@@ -193,6 +193,14 @@ export const Flow = ({ store, customNodeTypes }) => {
                 if (!didAdapt) {
                     targetNode.data.spec.inputs = targetInput;
                     setEdges((edges) => edges.filter((e) => e.id !== edge.id));
+                } else {
+                    updateNodeData(targetNode.id, {
+                        ...targetNode.data,
+                        spec: {
+                            ...targetNode.data.spec,
+                            adapt_input: false
+                        }
+                    })
                 }
             }
         } catch (e) {
@@ -206,6 +214,8 @@ export const Flow = ({ store, customNodeTypes }) => {
     const onReconnect = useCallback(
         (oldEdge, newConnection) => {
             edgeReconnectSuccessful.current = true;
+
+            setEdges((edges) => edges.filter((e) => e.id !== oldEdge.id));
 
             const connection = {
                 source: oldEdge.source,

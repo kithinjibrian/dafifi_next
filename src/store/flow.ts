@@ -136,6 +136,10 @@ const debouncedPush = debounce(async (state: FlowState) => {
                     };
                 }
 
+                if (data.spec.hasOwnProperty("adapt_input")) {
+                    // delete data.spec.adapt_input;
+                }
+
                 return {
                     ...rest,
                     data,
