@@ -11,10 +11,10 @@ export interface CodeStoreDTO {
 
 const push = debounce(async (state) => {
     try {
-        // await request.post("/file/save", {
-        //     id: state.id,
-        //     data: state.data
-        // })
+        await request.post("/file/save", {
+            id: state.id,
+            data: state.data
+        })
     } catch (e) {
         report_error(e)
     }

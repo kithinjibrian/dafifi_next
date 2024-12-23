@@ -10,7 +10,7 @@ import {
     Connection
 } from '@xyflow/react';
 import { FlowEdge } from "./node/flow-edge";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useProjectStore } from "@/store/project";
 import { nanoid } from "nanoid";
 import { Socket, Type } from "@/store/flow";
@@ -32,6 +32,8 @@ const createEdgeData = (getType: Function, sourceType: Type, targetType: Type) =
 };
 
 export const Flow = ({ store, customNodeTypes }) => {
+
+    const edgeReconnectSuccessful = useRef(true);
 
     const { project } = useProjectStore();
 
