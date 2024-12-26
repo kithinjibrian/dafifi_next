@@ -84,12 +84,12 @@ export interface FlowState {
     setEdges: (updater: (edges: Edge[]) => Edge[]) => void;
 
     // Struct management
-    addStruct: () => void;
+    addStruct: (name?: string, schema?: Type[]) => void;
     updateStruct: (id: string, value: Partial<Struct>) => void;
     setSchemas: (schemas: Struct[]) => void;
 
     // Variable management
-    addVariable: () => void;
+    addVariable: (name?: string, type?: Type) => void;
     updateVariable: (id: string, value: Partial<Variable>) => void;
 
     // Node-specific methods
@@ -151,8 +151,6 @@ const debouncedPush = debounce(async (state: FlowState) => {
             variables: state.variables,
         };
 
-        if (!data.nodes || (data.nodes && data.nodes.length <= 0)) return;
-
         await request.post("/file/save", {
             id: state.id,
             data: JSON.stringify(data, null, 4),
@@ -160,7 +158,7 @@ const debouncedPush = debounce(async (state: FlowState) => {
     } catch (e) {
         report_error(e);
     }
-}, 500);
+}, 1000);
 
 export const createFlowStore = async (_file: FileDTO) => {
 
@@ -222,15 +220,20 @@ export const createFlowStore = async (_file: FileDTO) => {
             debouncedPush(get());
         },
 
-        addStruct: () => {
+        addStruct: (name?: string, schema?: any[]) => {
+            const struct = get().structs.find((s) => s.name == name);
+
+            if (struct)
+                return;
+
             set((state) => ({
                 structs: [
                     ...(state.structs || []),
                     {
                         id: nanoid(),
-                        name: `struct MyStruct${state.structs.length}`,
+                        name: name ?? `struct MyStruct${state.structs.length}`,
                         color: "magenta",
-                        schema: [],
+                        schema: schema ?? [],
                     },
                 ],
             }));
@@ -251,32 +254,45 @@ export const createFlowStore = async (_file: FileDTO) => {
         },
 
         // Variable management
-        addVariable: () => {
+        addVariable: (name?: string, type?: Type, value: any = null) => {
+            const va = get().variables.find(v => v.name == name);
+
+            if (va) {
+                return va;
+            }
+
+            let variable = {
+                id: nanoid(),
+                name: name ?? `MyVar${get().variables.length}`,
+                initialValue: value,
+                type: type ?? {
+                    tag: "TCon",
+                    tcon: {
+                        name: "integer",
+                        types: [],
+                    }
+                }
+            }
             set((state) => ({
                 variables: [
                     ...state.variables,
-                    {
-                        id: nanoid(),
-                        name: `MyVar${state.variables.length}`,
-                        initialValue: null,
-                        type: {
-                            tag: "TCon",
-                            tcon: {
-                                name: "integer",
-                                types: [],
-                            }
-                        }
-                    },
+                    variable,
                 ],
             }));
             debouncedPush(get());
+
+            return variable;
         },
         updateVariable: (id, value) => {
-            set((state) => ({
-                variables: state.variables.map((variable) =>
-                    variable.id === id ? deepMerge(variable, value) : variable
-                ),
-            }));
+            set((state) => {
+                const index = state.variables.findIndex((variable) => variable.id === id);
+                if (index === -1) return state;
+
+                const updatedVariables = [...state.variables];
+                updatedVariables[index] = { ...state.variables[index], ...value };
+
+                return { variables: updatedVariables };
+            });
             debouncedPush(get());
         },
 

@@ -10,16 +10,19 @@ import {
     Connection
 } from '@xyflow/react';
 import { FlowEdge } from "./node/flow-edge";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useProjectStore } from "@/store/project";
 import { nanoid } from "nanoid";
 import { Socket, Type } from "@/store/flow";
 import { report_error } from "@/utils/request";
 import { apply, unify } from "@/utils/type";
 import { NodeBar } from "./node-bar";
+import { defs } from "@/components/utils/builtin";
+import { useErrorStore } from "@/store/errors";
+import { parse } from "@/utils/compiler";
+import { createGetNodeSpec } from "./variable";
 
 const EDGE_TYPES = { flowedge: FlowEdge };
-
 
 const createEdgeData = (getType: Function, sourceType: Type, targetType: Type) => {
     const t = getType(sourceType);
@@ -35,7 +38,9 @@ export const Flow = ({ store, customNodeTypes }) => {
 
     const edgeReconnectSuccessful = useRef(true);
 
-    const { project } = useProjectStore();
+    const { project, getSpecNode } = useProjectStore();
+
+    const { log_error } = useErrorStore();
 
     const {
         nodes,
@@ -50,12 +55,15 @@ export const Flow = ({ store, customNodeTypes }) => {
         setSelectedNode,
         getType,
         updateNodeData,
+        addVariable,
+        addStruct
     } = store();
 
     const onNodeClick = useCallback((_, node) => setSelectedNode(node), [setSelectedNode]);
 
     const handleAddNode = useCallback(
         (node: any, position: { x: number; y: number } | null = null) => {
+
             const lastPosition = selectedNode ? selectedNode.position : { x: 0, y: 0 };
 
             const newPosition = position || {
@@ -63,12 +71,20 @@ export const Flow = ({ store, customNodeTypes }) => {
                 y: lastPosition.y,
             };
 
-            const data = {
-                ...node.data,
-                ...(node.type === 'io/in' ? { projectId: project?.id || -1 } : {}),
-            };
+            const {
+                data,
+                ...rest
+            } = node;
 
-            const newNode = { id: nanoid(), type: node.type, position: newPosition, data };
+            const newNode = {
+                id: nanoid(),
+                type: rest.type,
+                position: newPosition,
+                data: {
+                    ...data,
+                    spec: JSON.parse(JSON.stringify(rest))
+                }
+            };
 
             onNodesChange([{ type: 'add', item: newNode }]);
             return newNode;
@@ -111,26 +127,29 @@ export const Flow = ({ store, customNodeTypes }) => {
             updateNodeData(sourceNode.id, sourceNode.data);
             updateNodeData(targetNode.id, targetNode.data);
 
-            const edge = createEdge(connection, sourceOutput.type, targetInput.type);
+            const sourceOutput2 = sourceNode.data.spec.outputs.find((o: Socket) => o.name === connection.sourceHandle);
+            const targetInput2 = targetNode.data.spec.inputs.find((i: Socket) => i.name === connection.targetHandle);
+
+            const edge = createEdge(connection, sourceOutput2.type, targetInput2.type);
             onEdgesChange([{ type: 'add', item: edge }]);
 
             return edge;
 
         } catch (e) {
-            report_error(e.message);
+            log_error(e.message);
             throw new Error(e.message);
         }
     }, [getNode, report_error, updateNodeData, onEdgesChange]);
 
     function adaptSpecField(targetNode, sourceNode, sourceHandle, fieldKey, mergeStrategy) {
         if (!sourceNode) {
-            report_error(`Source node not found for handle: ${sourceHandle}`);
+            log_error(`Source node not found for handle: ${sourceHandle}`);
             return false;
         }
 
         const sourceOutput = sourceNode.data.spec.outputs.find((o: Socket) => o.name === sourceHandle);
         if (!sourceOutput) {
-            report_error(`Source output not found for handle: ${sourceHandle}`);
+            log_error(`Source output not found for handle: ${sourceHandle}`);
             return false;
         }
 
@@ -141,10 +160,10 @@ export const Flow = ({ store, customNodeTypes }) => {
                 targetNode.data.spec[fieldKey] = mergeStrategy(targetNode.data.spec[fieldKey], struct.schema);
                 return true;
             } else {
-                report_error(`Struct not found for type: ${type}`);
+                log_error(`Struct not found for type: ${type}`);
             }
         } else {
-            report_error(`Type Mismatch: Type '${type}' is not a struct`);
+            log_error(`Type Mismatch: Type '${type}' is not a struct`);
         }
         return false;
     }
@@ -153,16 +172,18 @@ export const Flow = ({ store, customNodeTypes }) => {
         try {
             const targetNode = getNode(connection.target);
             if (!targetNode) {
-                report_error(`Target node not found for connection: ${connection.target}`);
+                log_error(`Target node not found for connection: ${connection.target}`);
                 return;
             }
 
             const targetInput = [...targetNode.data.spec.inputs];
+
             const edge = handleConnection(connection);
             if (!edge) {
-                report_error(`Failed to create edge for connection: ${connection}`);
+                log_error(`Failed to create edge for connection: ${connection}`);
                 return;
             }
+
 
             if (targetNode?.data.spec.adapt_output == connection.targetHandle) {
                 const sourceNode = getNode(connection.source);
@@ -187,7 +208,7 @@ export const Flow = ({ store, customNodeTypes }) => {
                     sourceNode,
                     connection.sourceHandle,
                     'inputs',
-                    (original, schema) => original.concat(schema)
+                    (original, schema) => original.concat(schema) // stop concat
                 );
 
                 if (!didAdapt) {
@@ -238,6 +259,72 @@ export const Flow = ({ store, customNodeTypes }) => {
         },
         [setEdges],
     );
+
+    useEffect(() => {
+        defs["add_node"] = {
+            type: "function",
+            signature: "",
+            exec: (args: any[]) => {
+                const node = getSpecNode(args[0])
+                return handleAddNode(node, args[1]);
+            }
+        }
+
+        defs["get_node"] = {
+            type: "function",
+            signature: "",
+            exec: (args: any[]) => {
+                const node = getNode(args[0])
+                console.log(node);
+            }
+        }
+
+        defs["connect_edge"] = {
+            type: "function",
+            signature: "",
+            exec: (args: any[]) => {
+                onConnect(args[0]);
+            }
+        }
+
+        defs["add_variable"] = {
+            type: "function",
+            signature: "(name: string, type: string) -> variable",
+            exec: (args: any[]) => {
+                const value = typeof args[2] == "object" ? args[2].map(v => JSON.stringify(v, null, 2)) : args[2];
+                return addVariable(args[0], parse(args[1]), value);
+            }
+        }
+
+        defs["get_variable"] = {
+            type: "function",
+            signature: "(variable: variable) -> node",
+            exec: (args: any[]) => {
+                let variable = args[0];
+                return handleAddNode({
+                    type: "variable/get",
+                    data: {
+                        variableId: variable.id,
+                    },
+                    ...createGetNodeSpec(variable)
+                }, args[1])
+            }
+        }
+
+        defs["add_struct"] = {
+            type: "function",
+            signature: "",
+            exec: (args: any[]) => {
+                return addStruct(args[0], Object.entries(args[1]).map(([key, value]) => {
+                    return {
+                        name: key,
+                        type: parse(value)
+                    }
+                }));
+            }
+        }
+
+    }, [handleAddNode, getNode, onConnect, addVariable, addStruct])
 
     return (
         <ResizablePanelGroup direction="horizontal" style={{ height: '94%' }}>

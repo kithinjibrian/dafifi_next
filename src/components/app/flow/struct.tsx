@@ -11,6 +11,7 @@ const STRUCT_PREFIX = "struct ";
 const createToStruct = (type: string) => ({
     label: `To ${type}`,
     own_spec: true,
+    category: "Action",
     inputs: [
         {
             name: "value",
@@ -76,7 +77,7 @@ export const Struct = ({ store, struct, onSelectNode }) => {
     const handleSelectNode = useCallback(() => {
         onSelectNode({
             type: "struct/tostruct",
-            data: { spec: createToStruct(struct.name.split(" ").slice(1).join(" ") || "") },
+            ...createToStruct(struct.name.split(" ").slice(1).join(" ") || ""),
         });
     }, [onSelectNode, struct.name]);
 

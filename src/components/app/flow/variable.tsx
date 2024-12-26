@@ -36,9 +36,11 @@ type VariableProps = {
 };
 
 // Utility functions for node specification creation
-const createGetNodeSpec = (variable: TVariable) => ({
+export const createGetNodeSpec = (variable: TVariable) => ({
     label: variable.name,
     own_spec: true,
+    category: "Variable",
+    collapse: true,
     inputs: [],
     outputs: [{
         name: "value",
@@ -46,9 +48,11 @@ const createGetNodeSpec = (variable: TVariable) => ({
     }],
 });
 
-const createSetNodeSpec = (variable: TVariable) => ({
+export const createSetNodeSpec = (variable: TVariable) => ({
     label: variable.name,
     own_spec: true,
+    category: "Variable",
+    collapse: true,
     inputs: [
         {
             name: "flow",
@@ -230,7 +234,7 @@ export const Variable: React.FC<VariableProps> = ({
     }, [structs, variable.type.tcon.name, variable.id, updateVariable]);
 
     // Render Helpers
-    const renderSingleContainer = () => {
+    const RenderSingleContainer = () => {
         return (
             <div>
                 {errors.length > 0 && (
@@ -250,7 +254,7 @@ export const Variable: React.FC<VariableProps> = ({
         )
     };
 
-    const renderArrayContainer = () => {
+    const RenderArrayContainer = () => {
         const elemType = variable.type.tcon.types[0];
         const isPrimitive = ["string", "integer", "boolean", "float"].includes(elemType.tcon.name);
 
@@ -320,7 +324,7 @@ export const Variable: React.FC<VariableProps> = ({
     };
 
 
-    const renderMapContainer = () => {
+    const RenderMapContainer = () => {
         const elemType = variable.type.tcon.types[0];
         const isPrimitive = ["string", "integer", "boolean", "float"].includes(elemType.tcon.name);
 
@@ -361,27 +365,29 @@ export const Variable: React.FC<VariableProps> = ({
 
         return (
             <>
-                {(variable.initialValue || []).map((kv, index) => (
-                    <div className={isPrimitive ? "flex" : "block"} key={`map-item-${index}`}>
-                        {errors.length > 0 && (
-                            <div className="text-red-500 mb-2">
-                                {errors.map((error, idx) => (
-                                    <div key={idx}>• {error}</div>
-                                ))}
-                            </div>
-                        )}
-                        <PolyInput
-                            type="string"
-                            value={kv.key ?? ""}
-                            onChange={(name, val) => handleKeyChange(index, val)}
-                        />
-                        <PolyInput
-                            type={variable.type}
-                            value={kv.value ?? ""}
-                            onChange={(name, val) => handleValueChange(index, val)}
-                        />
-                    </div>
-                ))}
+                {(variable.initialValue || [])
+                    .map(kv => typeof kv == "string" ? JSON.parse(kv) : kv)
+                    .map((kv, index) => (
+                        <div className={isPrimitive ? "flex" : "block"} key={`map-item-${index}`}>
+                            {errors.length > 0 && (
+                                <div className="text-red-500 mb-2">
+                                    {errors.map((error, idx) => (
+                                        <div key={idx}>• {error}</div>
+                                    ))}
+                                </div>
+                            )}
+                            <PolyInput
+                                type="string"
+                                value={kv.key ?? ""}
+                                onChange={(name, val) => handleKeyChange(index, val)}
+                            />
+                            <PolyInput
+                                type={variable.type}
+                                value={kv.value ?? ""}
+                                onChange={(name, val) => handleValueChange(index, val)}
+                            />
+                        </div>
+                    ))}
                 <Button
                     className="w-full bg-sky-500 text-foreground mt-2"
                     onClick={addKeyValue}
@@ -424,10 +430,11 @@ export const Variable: React.FC<VariableProps> = ({
                 </div>
                 <div className="text-sm font-medium mb-2">Initial Value:</div>
                 {variable.type.tcon.name === "array"
-                    ? renderArrayContainer()
+                    ? <RenderArrayContainer />
                     : variable.type.tcon.name === "map"
-                        ? renderMapContainer()
-                        : renderSingleContainer()}
+                        ? <RenderMapContainer />
+                        : <RenderSingleContainer />
+                }
             </CardContent>
         </Card>
     );
@@ -473,8 +480,8 @@ export const Variable: React.FC<VariableProps> = ({
                                             type: "variable/get",
                                             data: {
                                                 variableId: variable.id,
-                                                spec: createGetNodeSpec(variable),
                                             },
+                                            ...createGetNodeSpec(variable)
                                         });
                                     }}
                                 >
@@ -493,8 +500,8 @@ export const Variable: React.FC<VariableProps> = ({
                                             type: "variable/set",
                                             data: {
                                                 variableId: variable.id,
-                                                spec: createSetNodeSpec(variable),
                                             },
+                                            ...createSetNodeSpec(variable)
                                         });
                                     }}
                                 >

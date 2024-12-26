@@ -6,6 +6,8 @@ import { useProjectStore } from "@/store/project"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import useResizeObserver from "use-resize-observer";
+import { Nac } from "@kithinji/nac"
+import { defs } from "@/components/utils/builtin"
 
 export function DefaultNode2<T>(props: NodeRendererProps<T>) {
     return (
@@ -93,7 +95,21 @@ export const NodeTree = ({
 
     const open = (node) => {
         if (node.isLeaf) {
-            onSelectNode(node.data);
+
+            if (node.data?.actions?.on_before_select) {
+                new Nac(node.data.actions.on_before_select, defs);
+            }
+
+            const newNode = onSelectNode(node.data);
+
+            if (newNode.data?.spec?.actions?.on_select) {
+                defs["NODE_G"] = {
+                    type: "variable",
+                    value: newNode
+                };
+
+                new Nac(newNode.data.spec.actions.on_select, defs);
+            }
         }
     }
 
@@ -129,3 +145,19 @@ export const NodeTree = ({
         </div>
     )
 }
+
+
+/*
+                let new_node = add_node("lifecycle/onStart", {
+                    x: NODE_G.position.x - 300,
+                    y: NODE_G.position.y - 50
+                });
+
+                connect_edge({
+                    source: new_node.id,
+                    target: NODE_G.id,
+                    sourceHandle: "flow",
+                    targetHandle: "flow"
+                });
+
+*/

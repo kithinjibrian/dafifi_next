@@ -32,7 +32,7 @@ export const FlowEditor: React.FC<{ file: FileDTO }> = ({ file }) => {
 
         if (specs && specs.length > 0)
             loadCustomTypes()
-    }, [file.store, report_error, specs]);
+    }, [specs]);
 
     return (
         <ReactFlowProvider>
