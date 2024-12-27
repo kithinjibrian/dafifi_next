@@ -46,6 +46,27 @@ const inputs = [
                 </div>
             )
         }
+    }, {
+        dataType: "boolean",
+        component: ({ cell, onBlur }) => {
+            const [value, setValue] = useState(cell.getValue());
+            return (
+                <div className="flex justify-center">
+                    <Checkbox
+                        checked={value}
+                        onCheckedChange={(value) => {
+                            onBlur({
+                                value: value,
+                                field: cell.column.id,
+                                id: cell.row.original["id"]
+                            })
+                        }}
+                        aria-label="Select all"
+                        className="mr-3"
+                    />
+                </div>
+            )
+        }
     }
 ]
 
@@ -92,7 +113,9 @@ export const getColumns = (schema: tableSchema[]): ColumnDef<any>[] => {
                             />
                             <Maximize2
                                 size={16}
+                                className="mr-3"
                             />
+                            <div className="">{row.index}</div>
                         </div>
                     )
                 }

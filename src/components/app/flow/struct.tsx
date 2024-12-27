@@ -89,18 +89,20 @@ export const Struct = ({ store, struct, onSelectNode }) => {
                 onMouseLeave={() => setIsHovered(false)}
             >
                 <div
-                    role="textbox"
-                    aria-label="Edit struct name"
-                    contentEditable
-                    suppressContentEditableWarning
-                    spellCheck={false}
-                    className="outline-none focus:border-b focus:border-gray-300 flex items-center truncate"
-                    onBlur={handleNameChange}
+                    className="outline-none focus:border-b focus:border-gray-300 flex items-center"
                 >
                     <Circle strokeWidth={0} className="mr-1.5" style={{ fill: struct.color }} />
-                    {struct.name.split(" ").slice(1).join(" ") || ""}
+                    <p
+                        className="w-[50px]"
+                        role="textbox"
+                        aria-label="Edit struct name"
+                        contentEditable
+                        suppressContentEditableWarning
+                        spellCheck={false}
+                        onBlur={handleNameChange}
+                    >{struct.name.split(" ").slice(1).join(" ") || ""}</p>
                 </div>
-                <div className={`flex items-center transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"}`}>
+                <div className={`flex items-center transition-opacity duration-200 ${isHovered ? "opacity-100 bg-background" : "opacity-0"}`}>
                     <Button
                         variant="ghost"
                         size="icon"

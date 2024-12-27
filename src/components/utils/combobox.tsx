@@ -69,17 +69,18 @@ export const Combobox: React.FC<ComboboxProps> = ({
             open={open}
             onOpenChange={setOpen}>
             <PopoverTrigger
-                asChild>
+                asChild
+                className={cn(
+                    "w-full", className
+                )}
+            >
                 <Button
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className={cn(
-                        "w-full truncate", className
-                    )}
                 >
                     {value
-                        ? opts.find((option) => option === value)
+                        ? opts.find(option => option === value)?.slice(0, 8) + (value?.length > 7 ? "..." : "")
                         : "Select..."}
                     <ChevronsUpDown className="opacity-50" />
                 </Button>

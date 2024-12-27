@@ -28,6 +28,7 @@ import { PolyInput } from "@/components/utils/poly-input";
 import { useErrorStore } from "@/store/errors";
 import { validateStruct } from "@/utils/validate";
 import { createDefault, getDefaultValue } from "@/utils/default";
+import { Input } from "@/components/ui/input";
 
 type VariableProps = {
     store: UseBoundStore<StoreApi<FlowState>>;
@@ -234,7 +235,7 @@ export const Variable: React.FC<VariableProps> = ({
     }, [structs, variable.type.tcon.name, variable.id, updateVariable]);
 
     // Render Helpers
-    const RenderSingleContainer = () => {
+    const RenderSingleContainer = ({ variable }) => {
         return (
             <div>
                 {errors.length > 0 && (
@@ -254,7 +255,7 @@ export const Variable: React.FC<VariableProps> = ({
         )
     };
 
-    const RenderArrayContainer = () => {
+    const RenderArrayContainer = ({ variable }) => {
         const elemType = variable.type.tcon.types[0];
         const isPrimitive = ["string", "integer", "boolean", "float"].includes(elemType.tcon.name);
 
@@ -290,7 +291,7 @@ export const Variable: React.FC<VariableProps> = ({
             <>
                 {(variable.initialValue || []).map((value, index) => {
                     return (
-                        <div className={isPrimitive ? "flex" : "block"} key={`array-item-${index}`}>
+                        <div className={"flex"} key={`array-item-${index}`}>
                             {errors.length > 0 && (
                                 <div className="text-red-500 mb-2">
                                     {errors.map((error, idx) => (
@@ -324,7 +325,7 @@ export const Variable: React.FC<VariableProps> = ({
     };
 
 
-    const RenderMapContainer = () => {
+    const RenderMapContainer = ({ variable }) => {
         const elemType = variable.type.tcon.types[0];
         const isPrimitive = ["string", "integer", "boolean", "float"].includes(elemType.tcon.name);
 
@@ -368,7 +369,7 @@ export const Variable: React.FC<VariableProps> = ({
                 {(variable.initialValue || [])
                     .map(kv => typeof kv == "string" ? JSON.parse(kv) : kv)
                     .map((kv, index) => (
-                        <div className={isPrimitive ? "flex" : "block"} key={`map-item-${index}`}>
+                        <div className={"flex"} key={`map-item-${index}`}>
                             {errors.length > 0 && (
                                 <div className="text-red-500 mb-2">
                                     {errors.map((error, idx) => (
@@ -398,7 +399,7 @@ export const Variable: React.FC<VariableProps> = ({
         );
     };
 
-    const RenderSettings = () => (
+    const RenderSettings = ({ variable }) => (
         <Card className="border-0 bg-background w-full">
             <CardHeader>
                 <CardTitle>Additional Settings</CardTitle>
@@ -430,10 +431,10 @@ export const Variable: React.FC<VariableProps> = ({
                 </div>
                 <div className="text-sm font-medium mb-2">Initial Value:</div>
                 {variable.type.tcon.name === "array"
-                    ? <RenderArrayContainer />
+                    ? RenderArrayContainer({ variable })
                     : variable.type.tcon.name === "map"
-                        ? <RenderMapContainer />
-                        : <RenderSingleContainer />
+                        ? RenderMapContainer({ variable })
+                        : RenderSingleContainer({ variable })
                 }
             </CardContent>
         </Card>
@@ -524,7 +525,7 @@ export const Variable: React.FC<VariableProps> = ({
                     </Button>
                 </div>
             </div>
-            {menu && <RenderSettings />}
+            {menu && RenderSettings({ variable })}
         </div>
     );
 };

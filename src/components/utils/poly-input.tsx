@@ -1,6 +1,18 @@
+"use client"
+
 import { Input } from "@/components/ui/input"
 import { Type } from "@/store/flow"
 import MonacoEditor from '@monaco-editor/react';
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
+import { Button } from "../ui/button";
 
 export type PolyInputProps = {
     type: string | Type,
@@ -93,19 +105,31 @@ const struct: React.FC<PolyInputProps> = ({
 
     return (
         <>
-            <div className="h-[200px]">
-                <MonacoEditor
-                    height="100%"
-                    width="100%"
-                    language={"json"}
-                    value={value}
-                    onChange={handleEditorChange}
-                    theme="vs-dark"
-                    options={{
-                        lineNumbers: 'off',
-                        minimap: { enabled: false }
-                    }}
-                />
+            <div className="w-full">
+                <Dialog>
+                    <DialogTrigger
+                        className="w-full bg-sky-500 p-1.5"
+                    >Edit Struct</DialogTrigger>
+                    <DialogContent className="h-[90%]">
+                        <DialogHeader>
+                            <DialogTitle>Struct</DialogTitle>
+                            <DialogDescription>
+                            </DialogDescription>
+                        </DialogHeader>
+                        <MonacoEditor
+                            height="100%"
+                            width="100%"
+                            language={"json"}
+                            value={value}
+                            onChange={handleEditorChange}
+                            theme="vs-dark"
+                            options={{
+                                lineNumbers: 'off',
+                                minimap: { enabled: false }
+                            }}
+                        />
+                    </DialogContent>
+                </Dialog>
             </div>
         </>
     );
