@@ -92,6 +92,7 @@ export const Variable: React.FC<VariableProps> = ({
         nodes,
         updateNodeData,
         updateVariable,
+        deleteVariable,
         getTypes,
         structs
     } = store();
@@ -161,6 +162,10 @@ export const Variable: React.FC<VariableProps> = ({
             updateNodeData(node.id, { spec: updateFn(node.data.spec) })
         );
     }, [findRelatedNodes, updateNodeData]);
+
+    const handleDelete = useCallback(() => {
+        deleteVariable(variable.id)
+    }, [variable.id])
 
     // Event Handlers
     const handleNameChange = (e: React.FocusEvent<HTMLDivElement>) => {
@@ -520,7 +525,8 @@ export const Variable: React.FC<VariableProps> = ({
                     >
                         <Settings2 />
                     </Button>
-                    <Button variant="ghost" size="icon" className="hover:bg-accent">
+                    <Button variant="ghost" size="icon" className="hover:bg-accent"
+                        onClick={handleDelete}>
                         <Trash />
                     </Button>
                 </div>

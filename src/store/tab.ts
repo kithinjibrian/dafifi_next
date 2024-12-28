@@ -26,6 +26,9 @@ const createStore = async (file: FileDTO | undefined) => {
         case "txt": {
             return createCodeStore(file);
         }
+        case "ui": {
+            return createCodeStore(file);
+        }
         case "req": {
             return createClientStore(null);
         }

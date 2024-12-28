@@ -175,7 +175,7 @@ export const createFlowStore = async (_file: FileDTO) => {
         structs,
         schemas,
         variables,
-        tab: "NodeTree",
+        tab: "Add Nodes",
         selectedNode: null,
 
         // Tab management
@@ -240,6 +240,15 @@ export const createFlowStore = async (_file: FileDTO) => {
             debouncedPush(get());
         },
 
+        deleteStruct: (id) => {
+            set((state) => {
+                return {
+                    structs: state.structs.filter(struct => struct.id !== id)
+                }
+            })
+
+            debouncedPush(get());
+        },
         updateStruct: (id, value) => {
             set((state) => {
                 const index = state.structs.findIndex((struct) => struct.id === id);
@@ -282,6 +291,16 @@ export const createFlowStore = async (_file: FileDTO) => {
             debouncedPush(get());
 
             return variable;
+        },
+
+        deleteVariable: (id) => {
+            set((state) => {
+                return {
+                    variables: state.variables.filter(variable => variable.id !== id)
+                }
+            })
+
+            debouncedPush(get());
         },
         updateVariable: (id, value) => {
             set((state) => {

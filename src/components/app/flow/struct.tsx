@@ -40,7 +40,7 @@ export const Struct = ({ store, struct, onSelectNode }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [menu, setMenu] = useState(false);
 
-    const { getTypes, updateStruct } = store();
+    const { getTypes, updateStruct, deleteStruct } = store();
 
     // Handlers
     const handleNameChange = useCallback((e) => {
@@ -80,6 +80,10 @@ export const Struct = ({ store, struct, onSelectNode }) => {
             ...createToStruct(struct.name.split(" ").slice(1).join(" ") || ""),
         });
     }, [onSelectNode, struct.name]);
+
+    const handleDelete = useCallback(() => {
+        deleteStruct(struct.id)
+    }, [struct.id])
 
     return (
         <div className="border-b">
@@ -121,7 +125,11 @@ export const Struct = ({ store, struct, onSelectNode }) => {
                             <Settings2 />
                         </Button>
                     )}
-                    <Button variant="ghost" size="icon" className="hover:bg-accent">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-accent"
+                        onClick={handleDelete}>
                         <Trash />
                     </Button>
                 </div>
@@ -129,7 +137,6 @@ export const Struct = ({ store, struct, onSelectNode }) => {
             {menu && <RenderSettings
                 struct={struct}
                 getTypes={getTypes}
-                updateStruct={updateStruct}
                 onAddField={handleAddField}
                 onFieldNameChange={handleFieldNameChange}
                 onFieldTypeChange={handleFieldTypeChange}

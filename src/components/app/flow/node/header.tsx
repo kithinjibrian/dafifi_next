@@ -34,12 +34,12 @@ export const HeaderNode = ({
                     <button
                         className="p-1 rounded-md transition-colors duration-200 ease-in-out"
                         onClick={() => {
-                            setActiveTab("SettingsTab");
+                            setActiveTab("Node settings");
                         }}
                     >
                         <Settings2 size={16} className="hover:text-gray-800" />
                     </button>
-                    <NodeInfo spec={data.spec} />
+                    {/* <NodeInfo spec={data.spec} /> */}
                     <button
                         className="p-1 rounded-md transition-colors duration-200 ease-in-out"
                     >

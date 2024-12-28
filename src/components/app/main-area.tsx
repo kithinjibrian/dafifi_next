@@ -15,6 +15,7 @@ import { RequestArea } from "./request/request-area";
 import { CodeEditor } from "./code/code-area";
 import { TableArea } from "./table/table-area";
 import { FlowEditor } from "./flow/flow-area";
+import { GuiEditor } from "./gui/gui-area";
 
 const Open = ({ file }: { file: FileDTO }) => {
     if ('ext' in file) {
@@ -25,6 +26,8 @@ const Open = ({ file }: { file: FileDTO }) => {
                 return <FlowEditor file={file} />;
             case 'txt':
                 return <CodeEditor file={file} />;
+            case 'ui':
+                return <GuiEditor file={file} />;
             case 'req':
                 return <RequestArea file={file} />;
             case 'tab':

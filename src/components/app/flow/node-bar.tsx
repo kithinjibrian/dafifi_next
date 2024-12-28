@@ -12,13 +12,14 @@ import { VariableTab } from './variables-tab';
 import useResizeObserver from 'use-resize-observer';
 import { NodeSettings } from './node-settings';
 import { StructTab } from './struct-tab';
+import { TooltipComponent } from '@/components/utils/tooltip';
 
 
 const navItems = [
-    { value: 'NodeTree', icon: Workflow, content: NodeTree },
-    { value: 'VariableTab', icon: Variable, content: VariableTab },
-    { value: 'StructureTab', icon: LayoutPanelTop, content: StructTab },
-    { value: 'SettingsTab', icon: Settings2, content: NodeSettings },
+    { value: 'Add Nodes', icon: Workflow, content: NodeTree },
+    { value: 'Create variables', icon: Variable, content: VariableTab },
+    { value: 'Create structs', icon: LayoutPanelTop, content: StructTab },
+    { value: 'Node settings', icon: Settings2, content: NodeSettings },
 ]
 
 export const NodeBar: React.FC<any> = (props) => {
@@ -49,7 +50,11 @@ export const NodeBar: React.FC<any> = (props) => {
                             value={item.value}
                             key={index}
                             className="border-r-4 border-r-transparent data-[state=active]:border-r-sky-500 data-[state=active]:shadow-none">
-                            {<item.icon size={30} strokeWidth={1} />}
+                            <TooltipComponent
+                                side="left"
+                                description={item.value}>
+                                {<item.icon size={30} strokeWidth={1} />}
+                            </TooltipComponent>
                         </TabsTrigger>
                     ))}
                 </TabsList>
