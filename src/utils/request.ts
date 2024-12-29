@@ -2,7 +2,7 @@ import { useAuthStore } from '@/store/auth';
 import axios from 'axios';
 
 export const request = axios.create({
-    baseURL: 'http://localhost:3000',
+    baseURL: 'https://api.dafifi.net',
     timeout: 10000,
     withCredentials: true,
 });
