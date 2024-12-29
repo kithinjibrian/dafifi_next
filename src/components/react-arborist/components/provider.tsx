@@ -30,6 +30,18 @@ type Props<T> = {
 
 const SERVER_STATE = initialState();
 
+const ModifiedBackend = (...args) => {
+    const instance = new HTML5Backend(...args);
+    const original = instance.handleTopDragStart;
+
+    instance.handleTopDragStart = (e, ...extraArgs) => {
+        e.preventDefault = () => { };
+        original(e, ...extraArgs);
+    };
+
+    return instance;
+};
+
 export function TreeProvider<T>({
     treeProps,
     imperativeHandle,
@@ -84,7 +96,7 @@ export function TreeProvider<T>({
                 <NodesContext.Provider value={state.nodes}>
                     <DndContext.Provider value={state.dnd}>
                         <DndProvider
-                            backend={HTML5Backend}
+                            backend={ModifiedBackend}
                             options={{ rootElement: api.props.dndRootElement || undefined }}
                             {...(treeProps.dndManager && { manager: treeProps.dndManager })}
                         >

@@ -1,10 +1,15 @@
 import { Button } from "@/components/ui/button";
+import { useNode } from "@craftjs/core";
 import React from "react";
 
-export const ButtonComponent = ({ size, variant, color, children }) => {
+export const ButtonComponent = ({ children }) => {
+    const { connectors: { connect, drag } } = useNode();
+
     return (
-        <Button size={size} variant={variant} color={color}>
+        <button
+            ref={ref => connect(drag(ref))}
+        >
             {children}
-        </Button>
+        </button>
     )
 }

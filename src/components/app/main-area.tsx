@@ -16,6 +16,7 @@ import { CodeEditor } from "./code/code-area";
 import { TableArea } from "./table/table-area";
 import { FlowEditor } from "./flow/flow-area";
 import { GuiEditor } from "./gui/gui-area";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 
 const Open = ({ file }: { file: FileDTO }) => {
     if ('ext' in file) {
@@ -36,40 +37,71 @@ const Open = ({ file }: { file: FileDTO }) => {
     }
 };
 
-
 export const MainArea = () => {
     const { tabs, activeTab, setActiveTab, removeTab } = useProjectStore();
 
+    const handleTabClose = (e, uuid) => {
+        e.stopPropagation(); // Prevent tab activation when closing
+        removeTab(uuid);
+    };
+
     return (
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full relative">
-            <TabsList className="bg-background w-full justify-start relative border-b p-0 m-0">
-                {tabs.map((tab, index) => (
-                    <TabsTrigger
-                        key={index}
-                        value={tab.uuid}
-                        className={`
-                            ring-0
-                            w-32
-                            border-x
-                            border-t-2
-                            border-b-4
-                            border-y-transparent
-                            data-[state=active]:bg-card 
-                            data-[state=active]:border-t-sky-500
-                            data-[state=active]:shadow-none
-                            relative group z-10`}>
-                        {tab.name}
-                        <X
-                            className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => removeTab(tab.uuid)} />
-                    </TabsTrigger>
-                ))}
+        <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full h-full relative"
+        >
+            <TabsList className="bg-background w-full justify-start p-0 m-0">
+                <ScrollArea className="w-full whitespace-nowrap">
+                    <div
+                        className="flex overflow-x-auto scrollbar-hide my-2"
+                    >
+                        {tabs.map((tab, index) => (
+                            <TabsTrigger
+                                key={tab.uuid}
+                                value={tab.uuid}
+                                className={`
+                    ring-0
+                    min-w-[8rem]
+                    max-w-[12rem]
+                    px-4
+                    border-t-2
+                    border-y-transparent
+                    data-[state=active]:bg-card
+                    data-[state=active]:border-t-sky-500
+                    data-[state=active]:shadow-none
+                    relative
+                    group
+                    z-10
+                    flex
+                    items-center
+                    justify-between
+                    truncate
+                  `}
+                            >
+                                <span className="truncate">{tab.name}</span>
+                                <X
+                                    className="ml-2 h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={(e) => handleTabClose(e, tab.uuid)}
+                                />
+                            </TabsTrigger>
+                        ))}
+                    </div>
+                    <ScrollBar orientation="horizontal" />
+                </ScrollArea>
             </TabsList>
-            {tabs.length > 0 ? tabs.map((tab, index) => (
-                <TabsContent className="m-0 p-0 bg-card h-full" key={index} value={tab.uuid}>
-                    {tab.ext && <Open file={tab} />}
-                </TabsContent>
-            )) : (
+
+            {tabs.length > 0 ? (
+                tabs.map((tab) => (
+                    <TabsContent
+                        className="m-0 p-0 bg-card h-full"
+                        key={tab.uuid}
+                        value={tab.uuid}
+                    >
+                        {tab.ext && <Open file={tab} />}
+                    </TabsContent>
+                ))
+            ) : (
                 <div className="h-full flex items-center justify-center">
                     <Image
                         src="/logo.svg"
@@ -81,4 +113,4 @@ export const MainArea = () => {
             )}
         </Tabs>
     );
-}
+};

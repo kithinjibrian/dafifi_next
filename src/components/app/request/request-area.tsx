@@ -15,14 +15,7 @@ import { TabView } from "../../utils/tab-view";
 import { Queries } from "./queries";
 import { Headers } from "./headers";
 import { Body } from "./body";
-
-const httpStrategy: Record<string, any> = {
-    GET: async (config) => await axios.get(config.link, config),
-    POST: async (config) => await axios.post(config.link, config.data, config),
-    PUT: async (config) => await axios.put(config.link, config.data, config),
-    PATCH: async (config) => await axios.patch(config.link, config.data, config),
-    DELETE: async (config) => await axios.delete(config.link, config)
-};
+import { request } from "@/utils/request";
 
 const requestTabs = [
     {
@@ -42,23 +35,43 @@ const requestTabs = [
 const responseTabs = [
     {
         name: "Response",
-        content: (response) => (
-            <MonacoEditor
-                height="500px"
-                language="json"
-                theme="vs-dark"
-                value={
-                    response
-                        ? JSON.stringify(response.data, null, 2)
-                        : 'No response yet'
+        content: (response) => {
+            if (response) {
+                const type = response.headers ? response.headers["content-type"] : null;
+
+                if (
+                    type == "image/x-icon" ||
+                    type == "image/jpeg" ||
+                    type == "image/png"
+                ) {
+                    const blob = URL.createObjectURL(new Blob([response.data], { type }))
+                    return (
+                        <img src={blob} alt="Image" />
+                    )
                 }
-                options={{
-                    readOnly: true,
-                    minimap: { enabled: false },
-                    automaticLayout: true
-                }}
-            />
-        )
+                return (
+                    <MonacoEditor
+                        height="500px"
+                        language="json"
+                        theme="vs-dark"
+                        value={
+                            response
+                                ? JSON.stringify(response.data, null, 2)
+                                : 'No response yet'
+                        }
+                        options={{
+                            readOnly: true,
+                            minimap: { enabled: false },
+                            automaticLayout: true
+                        }}
+                    />
+                )
+            } else {
+                return (
+                    <div>No response yet</div>
+                )
+            }
+        }
     },
     {
         name: "Headers",
@@ -105,7 +118,7 @@ export const RequestArea = ({ file }: { file: FileDTO }) => {
     const prepareRequestConfig = () => {
         const config: any = {
             method,
-            link: url,
+            url,
             headers: {},
             params: {}
         };
@@ -146,12 +159,16 @@ export const RequestArea = ({ file }: { file: FileDTO }) => {
 
         try {
             const config = prepareRequestConfig();
-            const res = await httpStrategy[method](config);
+
+            const res = await request.post("/client", {
+                method,
+                ...config
+            })
 
             setResponse({
-                status: res.status,
-                data: res.data,
-                headers: res.headers
+                status: res.data.status,
+                data: res.data.data,
+                headers: res.data.headers
             });
         } catch (error) {
             setResponse({

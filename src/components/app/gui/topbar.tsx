@@ -2,10 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useEditor } from "@craftjs/core";
 import { Eye, Redo2, Save, Undo2 } from "lucide-react";
+import { components } from "./components/components";
+import { renderToHTML } from "./utils/toHtml";
 
-export const Topbar = () => {
-    const { actions, query, enabled } = useEditor((state) => ({
-        enabled: state.options.enabled
+export const Topbar = ({ file }) => {
+    const { setData } = file.store();
+
+    const { actions, query, enabled } = useEditor((state, query) => ({
+        enabled: state.options.enabled,
+        canUndo: query.history.canUndo(),
+        canRedo: query.history.canRedo(),
     }));
 
     return (
@@ -32,7 +38,10 @@ export const Topbar = () => {
                 <Button
                     variant={enabled ? "outline" : "default"}
                     size="sm"
-                    onClick={() => actions.setOptions(options => options.enabled = !enabled)}
+                    onClick={() => {
+                        window.open(
+                            `https://public.dafifi.net/f/${file.path}`, 'otherTab');
+                    }}
                     className="gap-2"
                 >
                     <Eye className="h-4 w-4" />
@@ -46,12 +55,16 @@ export const Topbar = () => {
                 className="gap-2"
                 onClick={() => {
                     const json = query.serialize();
-                    console.log(json);
+                    setData({
+                        type: "DAFIFIUI",
+                        json,
+                        html: renderToHTML(json, components)
+                    });
                 }}
             >
                 <Save className="h-4 w-4" />
                 Save
             </Button>
-        </div>
+        </div >
     );
 };

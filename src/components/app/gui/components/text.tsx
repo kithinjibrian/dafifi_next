@@ -51,13 +51,13 @@ const TextSettings = () => {
 
 Text.craft = {
     props: {
-        text: 'Click to edit',
+        text: 'This is text',
         fontSize: 16
     },
     related: {
         settings: TextSettings
     },
     rules: {
-        canDrag: true
+        canDrag: () => true
     }
 };

@@ -68,7 +68,10 @@ export const FileExplorer = () => {
     };
 
 
-    const onMove = ({ dragIds, parentId, index }) => { };
+    const onMove = ({ dragIds, parentId, index }) => {
+        console.log("Allowing move...");
+    };
+
     const onDelete = ({ ids }) => { };
 
     return (

@@ -6,6 +6,7 @@ import { debounce } from "@/utils/debounce";
 export interface CodeStoreDTO {
     id: number;
     data: string;
+    context: any;
     setData: (value: string) => void;
 }
 
@@ -26,9 +27,11 @@ export const createCodeStore = async (file: FileDTO) => {
     return create<CodeStoreDTO>((set, get) => ({
         id: data.id,
         data: data.data,
-        setData: (value: string) => {
+        context: null,
+        setContext: (value: any) => set({ context: value }),
+        setData: (value: any) => {
             set(state => {
-                const _state = { ...state, data: value };
+                const _state = { ...state, data: typeof value == "string" ? value : JSON.stringify(value) };
                 push(_state);
                 return _state;
             })

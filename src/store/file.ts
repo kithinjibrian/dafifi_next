@@ -34,6 +34,9 @@ export const createFileSlice: StateCreator<
             report_error(e);
         }
     },
+    getFile: async () => {
+
+    },
     createFile: async (
         {
             parentId,

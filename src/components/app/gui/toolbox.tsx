@@ -4,6 +4,7 @@ import { Layout, Type } from "lucide-react";
 
 import { Text } from './components/text';
 import { Container } from "./components/container";
+import { ButtonComponent } from "./components/button";
 
 export const Toolbox = () => {
     const { connectors } = useEditor();
@@ -15,15 +16,29 @@ export const Toolbox = () => {
                 <div className="space-y-3">
                     <div
                         ref={ref => connectors.create(ref, <Element is={Text} fontSize={16} />)}
-                        className="flex items-center gap-2 p-2 border rounded cursor-move hover:bg-gray-100"
+                        className="flex items-center gap-2 p-2 border rounded cursor-move"
                     >
                         <Type size={16} />
                         <span>Text</span>
                     </div>
 
                     <div
-                        ref={ref => connectors.create(ref, <Element is={Container} canvas />)}
-                        className="flex items-center gap-2 p-2 border rounded cursor-move hover:bg-gray-100"
+                        ref={ref => connectors.create(ref, <Element is={ButtonComponent}>Button</Element>)}
+                        className="flex items-center gap-2 p-2 border rounded cursor-move"
+                    >
+                        <Type size={16} />
+                        <span>Button</span>
+                    </div>
+
+                    <div
+                        ref={ref => connectors.create(ref,
+                            <Element
+                                canvas
+                                is={Container}
+                                height="100%"
+                                width="100%"
+                            />)}
+                        className="flex items-center gap-2 p-2 border rounded cursor-move"
                     >
                         <Layout size={16} />
                         <span>Container</span>
