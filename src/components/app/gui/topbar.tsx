@@ -33,7 +33,7 @@ export const Topbar = ({ file }) => {
                 <Separator orientation="vertical" className="h-6" />
 
                 <Button
-                    variant={enabled ? "outline" : "default"}
+                    variant={"default"}
                     size="sm"
                     onClick={() => {
                         window.open(
@@ -42,7 +42,7 @@ export const Topbar = ({ file }) => {
                     className="gap-2"
                 >
                     <Eye className="h-4 w-4" />
-                    {enabled ? "Preview" : "Edit"}
+                    Preview
                 </Button>
             </div>
         </div >
