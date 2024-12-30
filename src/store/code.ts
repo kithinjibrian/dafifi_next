@@ -1,7 +1,7 @@
 import { report_error, request } from "@/utils/request";
 import { create } from "zustand";
 import { FileDTO } from "./file";
-import { debounce } from "@/utils/debounce";
+import debounce from "debounce";
 
 export interface CodeStoreDTO {
     id: number;

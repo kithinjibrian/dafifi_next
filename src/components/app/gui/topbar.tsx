@@ -1,12 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useEditor } from "@craftjs/core";
-import { Eye, Redo2, Save, Undo2 } from "lucide-react";
-import { components } from "./components/components";
-import { renderToHTML } from "./utils/toHtml";
+import { Eye, Redo2, Undo2 } from "lucide-react";
 
 export const Topbar = ({ file }) => {
-    const { setData } = file.store();
 
     const { actions, query, enabled } = useEditor((state, query) => ({
         enabled: state.options.enabled,
@@ -48,23 +45,6 @@ export const Topbar = ({ file }) => {
                     {enabled ? "Preview" : "Edit"}
                 </Button>
             </div>
-
-            <Button
-                variant="default"
-                size="sm"
-                className="gap-2"
-                onClick={() => {
-                    const json = query.serialize();
-                    setData({
-                        type: "DAFIFIUI",
-                        json,
-                        html: renderToHTML(json, components)
-                    });
-                }}
-            >
-                <Save className="h-4 w-4" />
-                Save
-            </Button>
         </div >
     );
 };

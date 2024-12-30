@@ -1,63 +1,81 @@
-import { useNode } from "@craftjs/core";
-import { useEffect, useState } from "react";
-import ContentEditable from 'react-contenteditable'
+import React, { useEffect, useState } from 'react'
 
-export const Text = ({ text, fontSize, textAlign }) => {
-    const { connectors: { connect, drag }, hasSelectedNode, hasDraggedNode, actions: { setProp } } = useNode((state) => ({
-        hasSelectedNode: state.events.selected,
-        hasDraggedNode: state.events.dragged
-    }));
+import { useNode, useEditor } from '@craftjs/core'
+import { SettingsTabs } from '../settings'
 
-    const [editable, setEditable] = useState(false);
+interface TextProps {
+    id: string
+    className: string
+    key: string
+    text: string
+}
+interface TextInterface extends React.FC<TextProps> {
+    craft: object
+}
 
-    useEffect(() => { !hasSelectedNode && setEditable(false) }, [hasSelectedNode]);
+export const Text: TextInterface = (props) => {
+    const { node, connectors, actions } = useNode((node) => ({ node }))
+    const { enabled } = useEditor((state) => ({ enabled: state.options.enabled }))
 
-    return (
-        <div
-            ref={(ref) => connect(drag(ref))}
-            onClick={e => setEditable(true)}
+    const [textEdit, setTextEdit] = useState(node.data.props[props.id]?.text ?? props.text)
+    const [textPreview, setTextPreview] = useState(textEdit)
+
+    const onChange = (e: any) => {
+        actions.setProp((prop: any) => {
+            if (!prop[props.id]) prop[props.id] = {}
+            prop[props.id].text = e.target.innerText
+            setTextPreview(e.target.innerText)
+        }, 500)
+    }
+    const onClick = (e: any) => {
+        if (enabled) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+    }
+
+    useEffect(() => {
+        setTextEdit(node.data.props[props.id]?.text ?? props.text)
+    }, [enabled])
+
+    return enabled ? (
+        <span
+            ref={(ref) => connectors.connect(ref as HTMLElement)}
+            contentEditable
+            suppressContentEditableWarning={true}
+            className={props.className}
+            onClick={onClick}
+            onInput={onChange}
         >
-            <ContentEditable
-                html={text}
-                onChange={e =>
-                    setProp(props =>
-                        props.text = e.target.value.replace(/<\/?[^>]+(>|$)/g, "")
-                    )
-                }
-                tagName="p"
-                style={{ fontSize: `${fontSize}px`, textAlign }}
-            />
-        </div>
-    );
-};
-
-const TextSettings = () => {
-    const { actions, selected } = useNode((node) => ({
-        selected: node.events.selected
-    }));
-
-    return (
-        <div>
-            <input
-                type="number"
-                value={props.fontSize}
-                onChange={e =>
-                    actions.setProp(props => props.fontSize = parseInt(e.target.value))
-                }
-            />
-        </div>
-    );
-};
+            {textEdit}
+        </span>
+    ) : (
+        <span className={props.className}>{textPreview}</span>
+    )
+}
 
 Text.craft = {
+    displayName: 'Text',
     props: {
-        text: 'This is text',
-        fontSize: 16
+        text: '',
+        color: '#000000',
+        margin: '10px',
     },
     related: {
-        settings: TextSettings
+        settings: () => (
+            <SettingsTabs
+                tabs={{
+                    Content: [
+                        { label: 'Text', key: 'text', type: 'text' },
+                    ],
+                    Style: [
+                        { label: 'Color', key: 'color', type: 'color' },
+                    ],
+                    Advanced: [
+                        { label: 'Margin', key: 'margin', type: 'text' },
+                    ],
+                }}
+            />
+        ),
     },
-    rules: {
-        canDrag: () => true
-    }
 };

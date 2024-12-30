@@ -1,8 +1,8 @@
 import {
     Tabs,
-    TabsContent,
     TabsList,
-    TabsTrigger
+    TabsContent,
+    TabsTrigger,
 } from "@/components/ui/tabs";
 
 export const TabView = ({ tabs, defaultValue, extraProps = {} }) => (
@@ -13,7 +13,6 @@ export const TabView = ({ tabs, defaultValue, extraProps = {} }) => (
                     key={tab.name}
                     value={tab.name}
                     className={`
-                            w-32
                             border-b-2
                             border-y-transparent
                             data-[state=active]:bg-card 

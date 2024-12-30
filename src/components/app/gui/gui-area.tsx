@@ -1,75 +1,56 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Editor, Frame, Element } from "@craftjs/core";
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { Editor, Frame, Element, Resolver } from "@craftjs/core";
 
 import { FileDTO } from '@/store/file';
 
 import { Container } from './components/container';
 import { RenderNode } from './render-node';
 import { Viewport } from './viewport';
-import { components } from './components/components';
+import { ThemeContext, ThemeProvider } from './store/store';
 import { renderToHTML } from './utils/toHtml';
+import debounce from 'debounce';
 
 export const GuiEditor = ({ file }: { file: FileDTO }) => {
     if (!file.store) {
         return <p>Could not load file data!</p>;
     }
 
-    const [code, setCode] = useState<Record<string, any> | null>(null);
+    const { resolver } = useContext(ThemeContext)
 
-    const { data, setData, fetchData } = file.store();
+    const { json, setData, fetchData } = file.store();
 
     useEffect(() => {
         if (file) {
             fetchData();
-            if (data)
-                setCode(JSON.parse(data))
-            else {
-                setData({
-                    type: "DAFIFIUI",
-                    json: "",
-                    html: ""
-                })
-                setCode({
-                    type: "DAFIFIUI",
-                    json: "",
-                    html: ""
-                })
-            }
         }
-    }, [file]);
+    }, []);
+
+    const a = debounce((e, resolver) => {
+        const json = e.serialize();
+        const html = renderToHTML(json, resolver);
+        setData(json, html);
+    }, 100);
+
+    const onStateChange = (e: any) => {
+        a(e, resolver);
+    }
 
     return (
-        <div className="h-screen flex flex-col" data-craft-zone>
-            {code && (
-                <Editor
-                    enabled={false}
-                    resolver={components}
-                    onRender={RenderNode}
-                    onNodesChange={(query) => {
-                        const json = query.serialize();
-                        setData({
-                            type: "DAFIFIUI",
-                            json,
-                            html: renderToHTML(json, components)
-                        });
-                    }}
-                >
+        <div className="h-screen flex flex-col">
+            <Editor
+                enabled={false}
+                resolver={resolver as Resolver}
+                onRender={({ render }) => <RenderNode store={file.store} render={render} />}
+                onNodesChange={onStateChange}
+            >
+                <ThemeProvider>
                     <Viewport file={file}>
-                        <Frame data={code.json}>
-                            <Element
-                                canvas
-                                is={Container}
-                                width="100%"
-                                height="auto"
-                                background={{ r: 255, g: 255, b: 255, a: 1 }}
-                                padding={['40', '40', '40', '40']}
-                                custom={{ displayName: 'App' }}
-                            >
-                            </Element>
+                        <Frame data={json}>
+                            <Element canvas is={Container} children={[]} custom={{ displayName: 'App' }} />
                         </Frame>
                     </Viewport>
-                </Editor>
-            )}
+                </ThemeProvider>
+            </Editor>
         </div>
     );
 };

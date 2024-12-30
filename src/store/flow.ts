@@ -11,7 +11,7 @@ import {
 import { report_error, request } from "@/utils/request";
 import { nanoid } from "nanoid";
 import { FileDTO } from "./file";
-import { debounce } from "@/utils/debounce";
+import debounce from "debounce";
 
 // Types
 export type Type =
@@ -104,25 +104,8 @@ export interface FlowState {
     getTypes: () => string[];
 }
 
-// Utility to merge deeply
-function deepMerge<T>(target: T, source: Partial<T>): T {
-    const result = { ...target };
-    for (const key in source) {
-        if (
-            typeof source[key] === "object" &&
-            !Array.isArray(source[key]) &&
-            source[key] !== null
-        ) {
-            result[key] = deepMerge(result[key] as any, source[key] as any);
-        } else {
-            result[key] = source[key]!;
-        }
-    }
-    return result;
-}
-
 // Debounced push function to control server updates
-const debouncedPush = debounce(async (state: FlowState) => {
+const push = debounce(async (state: FlowState) => {
     try {
         const data = {
             nodes: state.nodes.map((node) => {
@@ -186,38 +169,38 @@ export const createFlowStore = async (_file: FileDTO) => {
             set((state) => ({
                 nodes: applyNodeChanges(changes, state.nodes),
             }));
-            debouncedPush(get());
+            push(get());
         },
         onEdgesChange: (changes) => {
             set((state) => ({
                 edges: applyEdgeChanges(changes, state.edges),
             }));
-            debouncedPush(get());
+            push(get());
         },
         onConnect: (connection) => {
             set((state) => ({
                 edges: addEdge(connection, state.edges),
             }));
-            debouncedPush(get());
+            push(get());
         },
         setNodes: (updater) => {
             set((state) => ({
                 nodes: updater(state.nodes),
             }));
-            debouncedPush(get());
+            push(get());
         },
         setEdges: (updater) => {
             set((state) => ({
                 edges: updater(state.edges),
             }));
-            debouncedPush(get());
+            push(get());
         },
 
         setSchemas: (schemas: Struct[]) => {
             set(() => ({
                 schemas: [...schemas],
             }));
-            debouncedPush(get());
+            push(get());
         },
 
         addStruct: (name?: string, schema?: any[]) => {
@@ -237,7 +220,7 @@ export const createFlowStore = async (_file: FileDTO) => {
                     },
                 ],
             }));
-            debouncedPush(get());
+            push(get());
         },
 
         deleteStruct: (id) => {
@@ -247,7 +230,7 @@ export const createFlowStore = async (_file: FileDTO) => {
                 }
             })
 
-            debouncedPush(get());
+            push(get());
         },
         updateStruct: (id, value) => {
             set((state) => {
@@ -259,7 +242,7 @@ export const createFlowStore = async (_file: FileDTO) => {
 
                 return { structs: updatedStructs };
             });
-            debouncedPush(get());
+            push(get());
         },
 
         // Variable management
@@ -288,7 +271,7 @@ export const createFlowStore = async (_file: FileDTO) => {
                     variable,
                 ],
             }));
-            debouncedPush(get());
+            push(get());
 
             return variable;
         },
@@ -300,7 +283,7 @@ export const createFlowStore = async (_file: FileDTO) => {
                 }
             })
 
-            debouncedPush(get());
+            push(get());
         },
         updateVariable: (id, value) => {
             set((state) => {
@@ -312,7 +295,7 @@ export const createFlowStore = async (_file: FileDTO) => {
 
                 return { variables: updatedVariables };
             });
-            debouncedPush(get());
+            push(get());
         },
 
         // Node-specific methods
@@ -337,7 +320,7 @@ export const createFlowStore = async (_file: FileDTO) => {
 
                 return { nodes: updatedNodes };
             });
-            debouncedPush(get());
+            push(get());
         },
         getNode: (id) => get().nodes.find((node) => node.id === id),
 
@@ -352,7 +335,7 @@ export const createFlowStore = async (_file: FileDTO) => {
             }
         },
         pushData: async () => {
-            await debouncedPush(get());
+            await push(get());
         },
 
         // Selected node

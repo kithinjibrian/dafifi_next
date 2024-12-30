@@ -1,15 +1,102 @@
-import { Button } from "@/components/ui/button";
-import { useNode } from "@craftjs/core";
-import React from "react";
+import React from 'react'
 
-export const ButtonComponent = ({ children }) => {
-    const { connectors: { connect, drag } } = useNode();
+import { useNode, useEditor } from '@craftjs/core'
+import { Child } from './child'
+import { SettingsTabs } from '../settings'
+
+const handleClick = (props: any, e: any) => {
+    if (props?.type === 'url') {
+        if (props?.newTab) {
+            window.open(props.url, '_blank')?.focus()
+        } else {
+            location.href = props.url
+        }
+    } else if (props?.type === 'email') {
+        location.href = `mailto:${props.email}`
+    } else if (props?.type === 'submit') {
+        const form = e.target.closest('form')
+
+        if (!props?.submitAsync) {
+            form.submit()
+            return
+        }
+
+        const formData = new FormData()
+        for (let e of form.elements) {
+            if (e.type !== 'submit') {
+                formData.append(e.id, e.type === 'radio' ? e.checked : e.value)
+            }
+        }
+
+        const options = {
+            method: props.submitMethod,
+            ...(props.submitMethod !== 'GET' ? { body: formData } : {}),
+        }
+        fetch(props.submitUrl, options)
+            .then((e) => e.text().then((d) => ({ ok: e.ok, text: d })))
+            .then(({ ok, text }) => {
+                alert(ok ? text ?? 'All good' : 'Something went wrong')
+            })
+    }
+}
+
+interface ButtonProps {
+    r: any
+    d: number[]
+    i: number
+    propId: string
+}
+interface ButtonInterface extends React.FC<ButtonProps> {
+    craft: object
+}
+
+const Button: ButtonInterface = ({ r, d, i, propId }) => {
+    const { node } = useNode((node) => ({ node }))
+    const { enabled } = useEditor((state) => ({ enabled: state.options.enabled }))
+    const { connectors } = useNode((node) => ({ node }))
+
+    const { ['class']: foo, ...attrsR } = r.attrs
+
+    const onClick = (e: any) => {
+        e.preventDefault()
+        if (!enabled) handleClick(node.data.props[propId], e)
+    }
 
     return (
         <button
-            ref={ref => connect(drag(ref))}
+            ref={(ref) => connectors.connect(ref as HTMLElement)}
+            {...attrsR}
+            className={r.classNames}
+            onClick={onClick}
         >
-            {children}
+            <Child root={r} d={d.concat(i)} />
         </button>
     )
 }
+export { Button }
+
+Button.craft = {
+    displayName: 'Button',
+    props: {
+    },
+    rules: {
+        canDrag: () => true,
+    },
+    related: {
+        settings: () => (
+            <SettingsTabs
+                tabs={{
+                    Content: [
+                        { label: 'Text', key: 'text', type: 'text' },
+                    ],
+                    Style: [
+                        { label: 'Background', key: 'background', type: 'color' },
+                    ],
+                    Advanced: [
+                        { label: 'Padding', key: 'padding', type: 'text' },
+                    ],
+                }}
+            />
+        ),
+    },
+};

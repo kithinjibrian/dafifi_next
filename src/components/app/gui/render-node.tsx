@@ -1,13 +1,20 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { useEditor, useNode } from '@craftjs/core';
-import { ArrowUp, Move, Trash } from 'lucide-react';
+import { ArrowUp, Move, Settings2, Trash } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { cn } from "@/lib/utils";
 
-export const RenderNode = ({ render }) => {
+interface RenderNodeProps {
+    render: React.ReactNode,
+    store: any
+}
+
+export const RenderNode: React.FC<RenderNodeProps> = ({ render, store }) => {
     const { id } = useNode();
     const currentRef = useRef(null);
     const outlineRef = useRef(null);
+
+    const { setActiveTab } = store();
 
     const { actions, query, isActive } = useEditor((_, query) => ({
         isActive: query.getEvent('selected').contains(id)
@@ -17,11 +24,13 @@ export const RenderNode = ({ render }) => {
         isHover,
         dom,
         name,
+        node,
+        parent,
         moveable,
         deletable,
         connectors: { drag },
-        parent
     } = useNode((node) => ({
+        node,
         isHover: node.events.hovered,
         dom: node.dom,
         name: node.data.custom.displayName || node.data.displayName,
@@ -30,6 +39,9 @@ export const RenderNode = ({ render }) => {
         parent: node.data.parent,
         props: node.data.props
     }));
+
+    const isRootChild = parent === 'ROOT'
+    const showFocus = id !== 'ROOT' && name !== 'App'
 
     const getPos = useCallback((dom) => {
         const { top, left, bottom, width, height } = dom
@@ -43,36 +55,29 @@ export const RenderNode = ({ render }) => {
         };
     }, []);
 
-    const scroll = useCallback(() => {
-        const { current: currentDOM } = currentRef;
-        const { current: outlineDOM } = outlineRef;
-        if (!currentDOM || !dom) return;
-
-        const { top, left } = getPos(dom);
-        currentDOM.style.top = top;
-        currentDOM.style.left = left;
-
-        if (outlineDOM) {
-            const { top, left, width, height } = getPos(dom);
-            outlineDOM.style.top = top;
-            outlineDOM.style.left = left;
-            outlineDOM.style.width = width;
-            outlineDOM.style.height = height;
+    useEffect(() => {
+        if (dom) {
+            if (isActive || isHover) dom.classList.add('component-selected')
+            else dom.classList.remove('component-selected')
         }
-    }, [dom, getPos]);
+    }, [dom, isActive, isHover])
+
+    const scroll = useCallback(() => {
+        if (!currentRef.current) return
+        const { top, left } = getPos(dom)
+        currentRef.current.style.top = top
+        currentRef.current.style.left = left
+    }, [dom, getPos])
 
     useEffect(() => {
-        const craftContainer = document.querySelector('.craftjs-renderer');
-        if (!craftContainer) return;
+        const el = document.querySelector('.craftjs-renderer')
 
-        craftContainer.addEventListener('scroll', scroll);
-        window.addEventListener('resize', scroll);
+        el?.addEventListener('scroll', scroll)
 
         return () => {
-            craftContainer.removeEventListener('scroll', scroll);
-            window.removeEventListener('resize', scroll);
-        };
-    }, [scroll]);
+            el?.removeEventListener('scroll', scroll)
+        }
+    }, [scroll])
 
     const ActionButton = ({ onClick, ref, children }) => (
         <button
@@ -119,13 +124,25 @@ export const RenderNode = ({ render }) => {
         >
             <span className="flex-1 mr-1">{name}</span>
 
+            {showFocus && (
+                <ActionButton >
+                    <Settings2 className="h-4 w-4" onClick={() => {
+                        setActiveTab("Node Settings", {
+                            magic: "node",
+                            node,
+                            actions
+                        })
+                    }} />
+                </ActionButton>
+            )}
+
             {moveable && (
                 <ActionButton ref={drag}>
                     <Move className="h-4 w-4" />
                 </ActionButton>
             )}
 
-            {id !== "ROOT" && (
+            {showFocus && (
                 <ActionButton
                     onClick={() => actions.selectNode(parent)}
                 >
@@ -150,10 +167,9 @@ export const RenderNode = ({ render }) => {
         <>
             {(isHover || isActive) && createPortal(
                 <>
-                    <Outline />
                     <Indicator />
                 </>,
-                document.body
+                document.querySelector('.page-container') as HTMLElement,
             )}
             {render}
         </>

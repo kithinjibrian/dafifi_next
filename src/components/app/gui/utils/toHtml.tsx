@@ -13,6 +13,7 @@ export const renderToHTML = (serializedState, components) => {
 <head>
   <title>Dafifi</title>
   <link rel="icon" href="https://app.dafifi.net/favicon.ico" type="image/x-icon"/>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
   ${html}

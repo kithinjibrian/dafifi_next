@@ -6,6 +6,7 @@ import { createClientStore } from "./client";
 import { createCodeStore } from "./code";
 import { createTableStore } from "./table";
 import { createFlowStore } from "./flow";
+import { createGuiStore } from "./gui";
 
 
 export interface TabStoreDTO {
@@ -27,7 +28,7 @@ const createStore = async (file: FileDTO | undefined) => {
             return createCodeStore(file);
         }
         case "ui": {
-            return createCodeStore(file);
+            return createGuiStore(file);
         }
         case "req": {
             return createClientStore(null);
