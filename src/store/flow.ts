@@ -80,8 +80,8 @@ export interface FlowState {
     onNodesChange: (changes: NodeChange[]) => void;
     onEdgesChange: (changes: EdgeChange[]) => void;
     onConnect: (connection: Connection) => void;
-    setNodes: (updater: (nodes: Node[]) => Node[]) => void;
-    setEdges: (updater: (edges: Edge[]) => Edge[]) => void;
+    setNodesInStore: (nodes: Node[]) => void;
+    setEdgesInStore: (edges: Edge[]) => void;
 
     // Struct management
     addStruct: (name?: string, schema?: Type[]) => void;
@@ -109,7 +109,7 @@ const push = debounce(async (state: FlowState) => {
     try {
         const data = {
             nodes: state.nodes.map((node) => {
-                const { data, selected, dragging, measured, ...rest } = node;
+                const { data, selected, dragging, ...rest } = node;
 
                 if (!data.spec.own_spec) {
                     const { label, collapse } = data.spec;
@@ -183,16 +183,12 @@ export const createFlowStore = async (_file: FileDTO) => {
             }));
             push(get());
         },
-        setNodes: (updater) => {
-            set((state) => ({
-                nodes: updater(state.nodes),
-            }));
+        setNodesInStore: (nodes: Node[]) => {
+            set({ nodes })
             push(get());
         },
-        setEdges: (updater) => {
-            set((state) => ({
-                edges: updater(state.edges),
-            }));
+        setEdgesInStore: (edges: Edge[]) => {
+            set({ edges })
             push(get());
         },
 

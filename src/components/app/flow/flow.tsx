@@ -7,7 +7,8 @@ import {
 import {
     ReactFlow,
     Background,
-    Connection
+    Connection,
+    useReactFlow
 } from '@xyflow/react';
 import { FlowEdge } from "./node/flow-edge";
 import { useCallback, useEffect, useRef } from "react";
@@ -21,6 +22,10 @@ import { defs } from "@/components/utils/builtin";
 import { useErrorStore } from "@/store/errors";
 import { parse } from "@/utils/compiler";
 import { createGetNodeSpec } from "./variable";
+import dagre from 'dagre';
+import { AlignHorizontalJustifyStart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TooltipComponent } from "@/components/utils/tooltip";
 
 const EDGE_TYPES = { flowedge: FlowEdge };
 
@@ -34,6 +39,39 @@ const createEdgeData = (getType: Function, sourceType: Type, targetType: Type) =
     }
 };
 
+const getLayoutedElements = (nodes, edges, direction = 'LR') => {
+    const dagreGraph = new dagre.graphlib.Graph();
+    dagreGraph.setDefaultEdgeLabel(() => ({}));
+    dagreGraph.setGraph({ rankdir: direction });
+
+    // Set nodes
+    nodes.forEach((node) => {
+        dagreGraph.setNode(node.id, { width: node.measured.width, height: node.measured.height });
+    });
+
+    // Set edges
+    edges.forEach((edge) => {
+        dagreGraph.setEdge(edge.source, edge.target);
+    });
+
+    // Apply layout
+    dagre.layout(dagreGraph);
+
+    // Get the positioned nodes
+    const layoutedNodes = nodes.map((node) => {
+        const nodeWithPosition = dagreGraph.node(node.id);
+        return {
+            ...node,
+            position: {
+                x: nodeWithPosition.x - (node.measured.width / 2),  // Center node by subtracting half the width
+                y: nodeWithPosition.y - (node.measured.height / 2),  // Center node by subtracting half the height
+            }
+        };
+    });
+
+    return { nodes: layoutedNodes, edges };
+};
+
 export const Flow = ({ store, customNodeTypes }) => {
 
     const edgeReconnectSuccessful = useRef(true);
@@ -42,13 +80,16 @@ export const Flow = ({ store, customNodeTypes }) => {
 
     const { log_error } = useErrorStore();
 
+    const { setEdges } = useReactFlow();
+
     const {
         nodes,
         edges,
         structs,
         schemas,
         getNode,
-        setEdges,
+        setNodesInStore,
+        setEdgesInStore,
         selectedNode,
         onNodesChange,
         onEdgesChange,
@@ -326,9 +367,36 @@ export const Flow = ({ store, customNodeTypes }) => {
 
     }, [handleAddNode, getNode, onConnect, addVariable, addStruct])
 
+    const onLayout = useCallback(
+        () => {
+            const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+                nodes,
+                edges,
+                "LR"
+            );
+
+            setNodesInStore([...layoutedNodes]);
+            setEdgesInStore([...layoutedEdges]);
+        },
+        [nodes, edges]
+    );
+
     return (
         <ResizablePanelGroup direction="horizontal" style={{ height: '94%' }}>
             <ResizablePanel className="h-full">
+                <div className="flex justify-end p-2 bg-transparent h-10">
+                    <TooltipComponent
+                        description={"re-arrange"}
+                        side="left">
+                        <Button
+                            variant={"ghost"}
+                            size="icon"
+                            className=""
+                            onClick={() => onLayout()}>
+                            <AlignHorizontalJustifyStart />
+                        </Button>
+                    </TooltipComponent>
+                </div>
                 <ReactFlow
                     className="h-full"
                     nodeTypes={customNodeTypes}

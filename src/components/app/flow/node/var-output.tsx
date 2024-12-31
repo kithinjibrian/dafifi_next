@@ -2,6 +2,7 @@ import { MinusCircle, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { VarProps } from "./var-input";
+import { useReactFlow } from "@xyflow/react";
 
 export const Var_output: React.FC<VarProps> = ({
     id,
@@ -10,9 +11,10 @@ export const Var_output: React.FC<VarProps> = ({
     store
 }) => {
     const {
-        edges,
-        setEdges
+        edges
     } = store();
+
+    const { setEdges } = useReactFlow();
 
     return (
         <div className="flex justify-end items-center border-b">
