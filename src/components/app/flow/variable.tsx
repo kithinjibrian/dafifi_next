@@ -219,191 +219,6 @@ export const Variable: React.FC<VariableProps> = ({
         }));
     };
 
-    // Validation and change handler for single container
-    const handleSingleContainerChange = useCallback((name: string, value: string) => {
-        const newErrors: string[] = [];
-        const isPrimitive = ["string", "boolean", "integer", "float"].includes(variable.type.tcon.name);
-
-        if (!isPrimitive) {
-            const struct = structs.find(struct => struct.name === variable.type.tcon.name);
-            if (struct) {
-                const isValid = validateStruct(value, struct.schema, newErrors);
-                if (!isValid) {
-                    setErrors(newErrors);
-                    return;
-                }
-            }
-        }
-
-        setErrors([]);
-        updateVariable(variable.id, { initialValue: value });
-    }, [structs, variable.type.tcon.name, variable.id, updateVariable]);
-
-    // Render Helpers
-    const RenderSingleContainer = ({ variable }) => {
-        return (
-            <div>
-                {errors.length > 0 && (
-                    <div className="text-red-500 mb-2">
-                        {errors.map((error, index) => (
-                            <div key={index}>• {error}</div>
-                        ))}
-                    </div>
-                )}
-                <PolyInput
-                    type={variable.type}
-                    name=""
-                    value={variable.initialValue ?? ""}
-                    onChange={handleSingleContainerChange}
-                />
-            </div>
-        )
-    };
-
-    const RenderArrayContainer = ({ variable }) => {
-        const elemType = variable.type.tcon.types[0];
-        const isPrimitive = ["string", "integer", "boolean", "float"].includes(elemType.tcon.name);
-
-        const handleValueChange = (index: number, val: string) => {
-            const newErrors: string[] = [];
-
-            if (!isPrimitive) {
-                const struct = structs.find(struct => struct.name === elemType.tcon.name);
-                if (struct) {
-                    const isValid = validateStruct(val, struct.schema, newErrors);
-                    if (!isValid) {
-                        setErrors(newErrors);
-                        return;
-                    }
-                }
-            }
-
-            const updatedArray = (variable.initialValue || []).map((item, i) =>
-                i === index ? val : item
-            );
-            setErrors([]);
-            updateVariable(variable.id, { initialValue: updatedArray });
-        };
-
-        const addArrayElement = () => {
-            updateVariable(variable.id, {
-                initialValue: [...(variable.initialValue || []), setDefaultValue(elemType)]
-            });
-        };
-
-
-        return (
-            <>
-                {(variable.initialValue || []).map((value, index) => {
-                    return (
-                        <div className={"flex"} key={`array-item-${index}`}>
-                            {errors.length > 0 && (
-                                <div className="text-red-500 mb-2">
-                                    {errors.map((error, idx) => (
-                                        <div key={idx}>• {error}</div>
-                                    ))}
-                                </div>
-                            )}
-                            <PolyInput
-                                disabled
-                                type="string"
-                                name={`Array(${index})`}
-                                value={`Array(${index})`}
-                            />
-                            <PolyInput
-                                type={variable.type}
-                                name=""
-                                value={value ?? ""}
-                                onChange={(name, val) => handleValueChange(index, val)}
-                            />
-                        </div>
-                    );
-                })}
-                <Button
-                    className="w-full bg-sky-500 text-foreground mt-2"
-                    onClick={addArrayElement}
-                >
-                    Add Element
-                </Button>
-            </>
-        );
-    };
-
-
-    const RenderMapContainer = ({ variable }) => {
-        const elemType = variable.type.tcon.types[0];
-        const isPrimitive = ["string", "integer", "boolean", "float"].includes(elemType.tcon.name);
-
-        const handleKeyChange = (index: number, val: string) => {
-            const updatedArray = (variable.initialValue || []).map((item, i) =>
-                i === index ? { key: val, value: item.value } : item
-            );
-            updateVariable(variable.id, { initialValue: updatedArray });
-        };
-
-        const handleValueChange = (index: number, val: string) => {
-            const newErrors: string[] = [];
-
-            if (!isPrimitive) {
-                const struct = structs.find(struct => struct.name === elemType.tcon.name);
-                if (struct) {
-                    const isValid = validateStruct(val, struct.schema, newErrors);
-                    if (!isValid) {
-                        setErrors(newErrors);
-                        return;
-                    }
-                }
-            }
-
-            const updatedArray = (variable.initialValue || []).map((item, i) =>
-                i === index ? { key: item.key, value: val } : item
-            );
-            setErrors([]);
-            updateVariable(variable.id, { initialValue: updatedArray });
-        };
-
-        const addKeyValue = () => {
-            const newEntry = { key: "", value: setDefaultValue(elemType) };
-            updateVariable(variable.id, {
-                initialValue: [...(variable.initialValue || []), newEntry]
-            });
-        };
-
-        return (
-            <>
-                {(variable.initialValue || [])
-                    .map(kv => typeof kv == "string" ? JSON.parse(kv) : kv)
-                    .map((kv, index) => (
-                        <div className={"flex"} key={`map-item-${index}`}>
-                            {errors.length > 0 && (
-                                <div className="text-red-500 mb-2">
-                                    {errors.map((error, idx) => (
-                                        <div key={idx}>• {error}</div>
-                                    ))}
-                                </div>
-                            )}
-                            <PolyInput
-                                type="string"
-                                value={kv.key ?? ""}
-                                onChange={(name, val) => handleKeyChange(index, val)}
-                            />
-                            <PolyInput
-                                type={variable.type}
-                                value={kv.value ?? ""}
-                                onChange={(name, val) => handleValueChange(index, val)}
-                            />
-                        </div>
-                    ))}
-                <Button
-                    className="w-full bg-sky-500 text-foreground mt-2"
-                    onClick={addKeyValue}
-                >
-                    Add Key Value
-                </Button>
-            </>
-        );
-    };
-
     const RenderSettings = ({ variable }) => (
         <Card className="border-0 bg-background w-full">
             <CardHeader>
@@ -435,12 +250,15 @@ export const Variable: React.FC<VariableProps> = ({
                     </div>
                 </div>
                 <div className="text-sm font-medium mb-2">Initial Value:</div>
-                {variable.type.tcon.name === "array"
-                    ? RenderArrayContainer({ variable })
-                    : variable.type.tcon.name === "map"
-                        ? RenderMapContainer({ variable })
-                        : RenderSingleContainer({ variable })
-                }
+                <PolyInput
+                    name="value"
+                    type={variable.type}
+                    structs={structs}
+                    value={variable.initialValue}
+                    onChange={(name, value) => {
+                        updateVariable(variable.id, { initialValue: value });
+                    }}
+                />
             </CardContent>
         </Card>
     );

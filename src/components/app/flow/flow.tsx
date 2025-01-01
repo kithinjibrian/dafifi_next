@@ -8,7 +8,7 @@ import {
     ReactFlow,
     Background,
     Connection,
-    useReactFlow
+    useReactFlow,
 } from '@xyflow/react';
 import { FlowEdge } from "./node/flow-edge";
 import { useCallback, useEffect, useRef } from "react";
@@ -224,7 +224,6 @@ export const Flow = ({ store, customNodeTypes }) => {
                 log_error(`Failed to create edge for connection: ${connection}`);
                 return;
             }
-
 
             if (targetNode?.data.spec.adapt_output == connection.targetHandle) {
                 const sourceNode = getNode(connection.source);

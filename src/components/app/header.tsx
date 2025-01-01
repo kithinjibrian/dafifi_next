@@ -45,7 +45,7 @@ export const Header = () => {
                 </Menubar>
             </div>
             <div className="ml-auto flex items-center space-x-2">
-                {project?.state === "running" ? (
+                {project?.state === "running" || project?.state === "queued" ? (
                     <Button
                         variant="ghost"
                         onClick={() => updateProject({ state: "stopped" })}>
@@ -55,7 +55,7 @@ export const Header = () => {
                 ) : (
                     <Button
                         variant="ghost"
-                        onClick={() => updateProject({ state: "running" })}>
+                        onClick={() => updateProject({ state: "queued" })}>
                         <Play size={20} strokeWidth={1.5} />
                         <span>Run</span>
                     </Button>

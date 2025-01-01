@@ -5,6 +5,7 @@ import { Types } from "@/components/utils/type";
 import { Button } from "@/components/ui/button";
 import { PolyInput } from "@/components/utils/poly-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { parse } from "@/utils/compiler";
 
 const STRUCT_PREFIX = "struct ";
 
@@ -134,18 +135,19 @@ export const Struct = ({ store, struct, onSelectNode }) => {
                     </Button>
                 </div>
             </div>
-            {menu && <RenderSettings
-                struct={struct}
-                getTypes={getTypes}
-                onAddField={handleAddField}
-                onFieldNameChange={handleFieldNameChange}
-                onFieldTypeChange={handleFieldTypeChange}
-            />}
+            {menu && RenderSettings({
+                struct,
+                getTypes,
+                handleAddField,
+                handleFieldNameChange,
+                handleFieldTypeChange
+            })
+            }
         </div>
     );
 };
 
-const RenderSettings = ({ struct, getTypes, onAddField, onFieldNameChange, onFieldTypeChange }) => {
+const RenderSettings = ({ struct, getTypes, handleAddField, handleFieldNameChange, handleFieldTypeChange }) => {
     return (
         <Card className="border-0 bg-background">
             <CardHeader>
@@ -155,7 +157,7 @@ const RenderSettings = ({ struct, getTypes, onAddField, onFieldNameChange, onFie
             <CardContent className="p-2">
                 <Button
                     className="bg-sky-500 text-foreground mb-2 w-full"
-                    onClick={onAddField}
+                    onClick={handleAddField}
                 >
                     Add Field
                 </Button>
@@ -163,14 +165,14 @@ const RenderSettings = ({ struct, getTypes, onAddField, onFieldNameChange, onFie
                 {struct.schema.map(({ name, type }, index) => (
                     <div key={index} className="mb-3">
                         <PolyInput
-                            type="string"
+                            type={parse("string")}
                             value={name ?? ""}
-                            onChange={(_, val) => onFieldNameChange(struct, index, val)}
+                            onChange={(_, val) => handleFieldNameChange(struct, index, val)}
                         />
                         <Types
                             type={type}
                             getTypes={getTypes}
-                            onChange={(type) => onFieldTypeChange(name, type)}
+                            onChange={(type) => handleFieldTypeChange(name, type)}
                         />
                     </div>
                 ))}

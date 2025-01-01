@@ -11,7 +11,7 @@ export const InputSocket = ({
     connected,
     defaultValue
 }) => {
-    const { getType } = store();
+    const { getType, structs } = store();
 
     const backgroundColor = getType(type);
 
@@ -22,12 +22,7 @@ export const InputSocket = ({
     } else if (type.tag === "TVar") {
         showName = true;
     } else if (
-        type.tag === "TCon" &&
-        (type.tcon.name === "flow" ||
-            type.tcon.name === "map" ||
-            type.tcon.name === "array" ||
-            type.tcon.name.startsWith("struct")
-        )
+        type.tag === "TCon" && type.tcon.name === "flow"
     ) {
         showName = true;
     }
@@ -40,7 +35,8 @@ export const InputSocket = ({
                 )}
                 {!showName && (
                     <PolyInput
-                        type={type.tcon.name}
+                        structs={structs}
+                        type={type}
                         name={name}
                         className="py-1 px-2 nodrag"
                         value={value}

@@ -51,7 +51,7 @@ export const MainArea = () => {
             onValueChange={setActiveTab}
             className="w-full h-full relative"
         >
-            <TabsList className="bg-background w-full justify-start p-0 m-0">
+            <TabsList className="border-b bg-background w-full justify-start p-0 m-0">
                 <ScrollArea className="w-full whitespace-nowrap">
                     <div
                         className="flex overflow-x-auto scrollbar-hide my-2"

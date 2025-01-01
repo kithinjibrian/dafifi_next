@@ -22,17 +22,17 @@ export const OutputSocket = ({
                 className="mr-3 flex items-center"
                 onBlur={(e) => {
 
-                    // if (!e.target.textContent || e.target.textContent == "") {
-                    //     e.target.textContent = name;
-                    // };
+                    if (!e.target.textContent || e.target.textContent == "") {
+                        e.target.textContent = name;
+                    };
 
                     const node = getNode(id);
                     const outputs = node.data.spec.outputs;
 
-                    // outputs[index] = {
-                    //     ...outputs[index],
-                    //     name: e.target.textContent
-                    // };
+                    outputs[index] = {
+                        ...outputs[index],
+                        name: e.target.textContent
+                    };
 
                     updateNodeData(id, {
                         spec: {

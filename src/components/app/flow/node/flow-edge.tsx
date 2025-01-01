@@ -1,11 +1,10 @@
 import {
     BaseEdge,
     EdgeLabelRenderer,
-    getBezierPath
+    getBezierPath,
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
-
 
 export const FlowEdge = ({
     id,
@@ -19,13 +18,19 @@ export const FlowEdge = ({
     data = {},
     markerEnd,
 }) => {
+    // Adjust coordinates to prevent degenerate straight lines
+    const adjustedSourceY = sourceY === targetY ? sourceY + 0.1 : sourceY;
+    const adjustedTargetY = sourceY === targetY ? targetY - 0.1 : targetY;
+    const adjustedSourceX = sourceX === targetX ? sourceX + 0.1 : sourceX;
+    const adjustedTargetX = sourceX === targetX ? targetX - 0.1 : targetX;
+
     // Generate the path for the Bezier curve
     const [edgePath, labelX, labelY] = getBezierPath({
-        sourceX,
-        sourceY,
+        sourceX: adjustedSourceX,
+        sourceY: adjustedSourceY,
         sourcePosition,
-        targetX,
-        targetY,
+        targetX: adjustedTargetX,
+        targetY: adjustedTargetY,
         targetPosition,
     });
 
@@ -36,7 +41,7 @@ export const FlowEdge = ({
         gradientColors = ['#3182ce', '#52c41a'], // Default glow colors
         glowIntensity = 0.7, // Glow intensity
         label = '',
-        labelStyle = {}
+        labelStyle = {},
     } = data;
 
     // Create unique gradient and filter IDs
@@ -55,7 +60,7 @@ export const FlowEdge = ({
                     </linearGradient>
 
                     {/* Glow Filter */}
-                    <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
+                    <filter id={filterId} x="-200%" y="-200%" width="400%" height="400%">
                         <feGaussianBlur
                             in="SourceGraphic"
                             stdDeviation="10"
@@ -112,10 +117,13 @@ export const FlowEdge = ({
                             borderRadius: '4px',
                             fontSize: '12px',
                             pointerEvents: 'all',
-                            border: `1px solid ${glowColors[1]}`,
-                            boxShadow: `0 0 10px rgba(${parseInt(glowColors[1].slice(1, 3), 16)}, ${parseInt(glowColors[1].slice(3, 5), 16)}, ${parseInt(glowColors[1].slice(5, 7), 16)}, 0.5)`,
+                            border: `1px solid ${gradientColors[1]}`,
+                            boxShadow: `0 0 10px rgba(${parseInt(gradientColors[1].slice(1, 3), 16)}, ${parseInt(
+                                gradientColors[1].slice(3, 5),
+                                16
+                            )}, ${parseInt(gradientColors[1].slice(5, 7), 16)}, 0.5)`,
                             animation: animated ? 'pulse 1.5s ease-in-out infinite' : 'none',
-                            ...labelStyle
+                            ...labelStyle,
                         }}
                         className="nodrag"
                     >
@@ -126,17 +134,22 @@ export const FlowEdge = ({
 
             {/* Global styles for animations */}
             <style jsx="true" global="true">{`
-        @keyframes dashAnimation {
-          to {
-            stroke-dashoffset: -10;
-          }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); }
-          50% { transform: translate(-50%, -50%) scale(1.05); }
-        }
-      `}</style>
+                @keyframes dashAnimation {
+                    to {
+                        stroke-dashoffset: -10;
+                    }
+                }
+
+                @keyframes pulse {
+                    0%,
+                    100% {
+                        transform: translate(-50%, -50%) scale(1);
+                    }
+                    50% {
+                        transform: translate(-50%, -50%) scale(1.05);
+                    }
+                }
+            `}</style>
         </>
     );
 };
