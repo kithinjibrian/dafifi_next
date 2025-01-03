@@ -12,7 +12,7 @@ type ToolboxItemProps = {
     title: string
     height?: string
     visible?: boolean
-    onChange?: (bool: boolean) => void
+    onChange?: (boolean: boolean) => void
     children: React.ReactNode
 }
 

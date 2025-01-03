@@ -1,6 +1,8 @@
-import { Type } from "@/store/flow";
 import { Combobox } from "./combobox";
 import { useState } from "react";
+import { Types as TYPES } from "@kithinji/nac";
+import { numericTypeClass, showTypeClass, stringTypeClass } from "@kithinji/nac/dist/typechecker/type";
+import { anyTypeClass } from "@/utils/compiler";
 
 export const Types = ({
     type,
@@ -27,16 +29,30 @@ export const Types = ({
         setSelectedType(type);
         setSelectedContainer(container);
 
-        const tcon: Type = {
+        const tcon: TYPES = {
             tag: "TCon",
             tcon: {
                 name: "",
                 types: [],
+                constraints: []
             },
         };
 
         if (container === "single") {
             tcon.tcon.name = type;
+            switch (type) {
+                case "integer":
+                case "float":
+                    tcon.tcon.constraints = [showTypeClass, anyTypeClass, numericTypeClass]
+                    break;
+                case "string":
+                    tcon.tcon.constraints = [showTypeClass, anyTypeClass, stringTypeClass]
+                    break;
+                case "boolean":
+                    tcon.tcon.constraints = [showTypeClass, anyTypeClass]
+                    break;
+            }
+
         } else {
             tcon.tcon.name = container;
             tcon.tcon.types = [{
@@ -44,6 +60,7 @@ export const Types = ({
                 tcon: {
                     name: type,
                     types: [],
+                    constraints: [showTypeClass, anyTypeClass]
                 },
             }];
         }

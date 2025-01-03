@@ -1,5 +1,7 @@
 "use client"
 
+import { builtin, Lexer, Nac, Parser, TypeChecker, Types } from "@kithinji/nac";
+
 import { Input } from "@/components/ui/input"
 import { Type } from "@/store/flow"
 import MonacoEditor from '@monaco-editor/react';
@@ -30,6 +32,7 @@ export type PolyInputProps = {
     defaultValue?: any,
     className?: string,
     onChange?: (name: string, value: any) => void,
+    onType?: (type: any) => void,
     onBlur?: (name: string, value: any) => void,
     onErrorChange?: (name: string, bool: boolean) => void,
     onError?: (name: string, errors: string[]) => void,
@@ -171,6 +174,97 @@ const Generic: React.FC<PolyInputProps> = (props) => {
         </div>
     );
 };
+
+const NacCode: React.FC<PolyInputProps> = ({
+    type,
+    structs,
+    name,
+    value,
+    onChange,
+    onType
+}) => {
+    const [errors, setErrors] = useState<string[]>([]);
+    const [isOpen, setIsOpen] = useState(false);
+
+    const [editorValue, setEditorValue] = useState(value || setDefaultValue(type, structs))
+
+    const handleEditorChange = (newValue: string) => {
+        setEditorValue(newValue)
+        onChange?.(name, null)
+    }
+
+    const handleOpenChange = (open: boolean) => {
+        let data = undefined;
+        if (!open) {
+            const lex = new Lexer(editorValue);
+            const tks = lex.tokenize();
+
+            const p = new Parser(tks);
+            const ast = p.parse();
+
+            const t = new TypeChecker();
+            const ty = t.run(ast, {});
+
+            const main = t.global.symbol_table.get("main");
+
+            if (!main) {
+                setErrors(["Can't find main function."]);
+                return;
+            };
+
+            const o: Types | null = t.hm.apply(t.subst, main);
+
+            if (!o) return;
+
+            if (o.tag == "TCon" && o.tcon.name == "->") {
+                const ret = o.tcon.types.pop();
+                data = {
+                    inputs: o.tcon.types.map((type, index) => ({ name: `in${index}`, type, removable: true })),
+                    outputs: [{ name: "return", type: ret, removable: true }]
+                };
+            }
+        }
+
+        onChange?.(name, data ? { magic: "nac", type: data, value: editorValue } : editorValue)
+        setIsOpen(open);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+            <DialogTrigger className="w-full bg-sky-500 p-1.5 text-white hover:bg-sky-600 transition-colors">
+                Write Code
+            </DialogTrigger>
+            <DialogContent
+                className="h-[90vh]"
+                onPointerDownOutside={(e) => e.preventDefault()}>
+                <DialogHeader>
+                    <DialogTitle>Nac code</DialogTitle>
+                </DialogHeader>
+                <MonacoEditor
+                    height="90%"
+                    width="100%"
+                    language="rust"
+                    value={editorValue}
+                    onChange={(value) => handleEditorChange(value)}
+                    theme="vs-dark"
+                    options={{
+                        minimap: { enabled: false },
+                        scrollBeyondLastLine: false,
+                        automaticLayout: true
+                    }}
+                />
+                {
+                    errors.length > 0 &&
+                    <ScrollArea className="h-32">
+                        {errors.map((i, n) => (
+                            <p key={n}>{`${n}. `}{i}</p>
+                        ))}
+                    </ScrollArea>
+                }
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 const Struct: React.FC<PolyInputProps> = ({
     type,
@@ -407,6 +501,8 @@ export const PolyInput: React.FC<PolyInputProps> = (props) => {
         return <Map {...props} />
     } else if (type.tcon.name == "boolean") {
         return <Boolean {...props} />
+    } else if (type.tcon.name == "nac") {
+        return <NacCode {...props} />
     } else {
         return <Generic {...props} />
     }

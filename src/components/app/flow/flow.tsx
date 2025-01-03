@@ -14,9 +14,8 @@ import { FlowEdge } from "./node/flow-edge";
 import { useCallback, useEffect, useRef } from "react";
 import { useProjectStore } from "@/store/project";
 import { nanoid } from "nanoid";
-import { Socket, Type } from "@/store/flow";
+import { Socket } from "@/store/flow";
 import { report_error } from "@/utils/request";
-import { apply, unify } from "@/utils/type";
 import { NodeBar } from "./node-bar";
 import { defs } from "@/components/utils/builtin";
 import { useErrorStore } from "@/store/errors";
@@ -26,10 +25,11 @@ import dagre from 'dagre';
 import { AlignHorizontalJustifyStart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TooltipComponent } from "@/components/utils/tooltip";
+import { HM, Types } from "@kithinji/nac";
 
 const EDGE_TYPES = { flowedge: FlowEdge };
 
-const createEdgeData = (getType: Function, sourceType: Type, targetType: Type) => {
+const createEdgeData = (getType: Function, sourceType: Types, targetType: Types) => {
     const t = getType(sourceType);
     const t2 = getType(targetType);
     return {
@@ -133,7 +133,7 @@ export const Flow = ({ store, customNodeTypes }) => {
         [onNodesChange, selectedNode, project],
     );
 
-    const createEdge = (connection: Connection, sourceType: Type, targetType: Type) => ({
+    const createEdge = (connection: Connection, sourceType: Types, targetType: Types) => ({
         id: nanoid(),
         type: 'flowedge',
         data: createEdgeData(getType, sourceType, targetType),
@@ -153,12 +153,18 @@ export const Flow = ({ store, customNodeTypes }) => {
         if (!sourceOutput || !targetInput) return;
 
         try {
-            const subst = unify(sourceOutput.type, targetInput.type);
+            const hm = new HM();
+            hm.constraint_eq(
+                sourceOutput.type,
+                targetInput.type
+            );
+
+            const subst = hm.solve();
 
             if (!subst) return;
 
             const applyToSockets = (sockets: Socket[]) =>
-                sockets.map((socket) => ({ ...socket, type: apply(subst, socket.type) }));
+                sockets.map((socket) => ({ ...socket, type: hm.apply(subst, socket.type) }));
 
             sourceNode.data.spec.inputs = applyToSockets(sourceNode.data.spec.inputs);
             sourceNode.data.spec.outputs = applyToSockets(sourceNode.data.spec.outputs);

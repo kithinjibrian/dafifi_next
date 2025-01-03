@@ -11,12 +11,14 @@ export const NodeHandle = ({
 }) => {
     // Mapping container types to icons
     const Icon: Record<string, any> = {
+        nac: Circle,
         integer: Circle,
         string: Circle,
         float: Circle,
         boolean: Circle,
         array: Brackets,
         map: Table,
+        object: Table,
         set: Braces,
         flow: Play,
         any: Square
@@ -41,6 +43,7 @@ export const NodeHandle = ({
 
     // Select the correct icon dynamically
     let SelectedIcon = Icon[type.tag == "TVar" ? "any" : type.tcon.name];
+
 
     if (!SelectedIcon && type.tcon.name.startsWith("struct"))
         SelectedIcon = LayoutPanelTop;

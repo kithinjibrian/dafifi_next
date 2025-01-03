@@ -5,7 +5,8 @@ import { Types } from "@/components/utils/type";
 import { Button } from "@/components/ui/button";
 import { PolyInput } from "@/components/utils/poly-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { parse } from "@/utils/compiler";
+import { anyTypeClass, parse, structTypeClass } from "@/utils/compiler";
+import { showTypeClass } from "@kithinji/nac/dist/typechecker/type";
 
 const STRUCT_PREFIX = "struct ";
 
@@ -20,7 +21,8 @@ const createToStruct = (type: string) => ({
                 tag: "TCon",
                 tcon: {
                     name: `struct ${type}`,
-                    types: []
+                    types: [],
+                    constraints: [showTypeClass, structTypeClass, anyTypeClass]
                 }
             }
         },
@@ -31,7 +33,8 @@ const createToStruct = (type: string) => ({
             tag: "TCon",
             tcon: {
                 name: `struct ${type}`,
-                types: []
+                types: [],
+                constraints: [showTypeClass, structTypeClass, anyTypeClass]
             }
         }
     }],
@@ -63,7 +66,7 @@ export const Struct = ({ store, struct, onSelectNode }) => {
         const schema = [...struct.schema];
         schema.unshift({
             name: `field${schema.length}`,
-            type: { tag: "TCon", tcon: { name: "integer", types: [] } },
+            type: parse("integer")
         });
         updateStruct(struct.id, { schema });
     }, [updateStruct, struct.id, struct.schema]);
@@ -165,13 +168,14 @@ const RenderSettings = ({ struct, getTypes, handleAddField, handleFieldNameChang
                 {struct.schema.map(({ name, type }, index) => (
                     <div key={index} className="mb-3">
                         <PolyInput
+                            name=""
                             type={parse("string")}
                             value={name ?? ""}
                             onChange={(_, val) => handleFieldNameChange(struct, index, val)}
                         />
                         <Types
                             type={type}
-                            getTypes={getTypes}
+                            getTypes={() => getTypes().filter(i => i !== "flow")}
                             onChange={(type) => handleFieldTypeChange(name, type)}
                         />
                     </div>

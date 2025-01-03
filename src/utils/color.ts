@@ -17,6 +17,7 @@ export const valueTypeColorMap: Record<string, string> = {
     boolean: "red",
     string: "gold",
     struct: "indigo",
+    nac: "teal"
 };
 
 export const categoryColorMap: Record<string, string> = {

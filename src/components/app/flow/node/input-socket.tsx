@@ -3,15 +3,16 @@ import { PolyInput } from "@/components/utils/poly-input";
 import { NodeHandle } from "./handle";
 
 export const InputSocket = ({
+    id,
     name,
     type,
     value,
     store,
     onChange,
     connected,
-    defaultValue
+    defaultValue,
 }) => {
-    const { getType, structs } = store();
+    const { getType, structs, getNode, updateNodeData } = store();
 
     const backgroundColor = getType(type);
 
@@ -41,7 +42,52 @@ export const InputSocket = ({
                         className="py-1 px-2 nodrag"
                         value={value}
                         defaultValue={defaultValue ?? ""}
-                        onChange={onChange}
+                        onChange={(name, data) => {
+                            if (
+                                data &&
+                                typeof data == "object" &&
+                                'magic' in data &&
+                                data.magic == "nac"
+                            ) {
+                                const node = getNode(id);
+                                const spec = node.data.spec;
+
+                                onChange("spec", {
+                                    ...spec,
+                                    inputs: [
+                                        ...spec.inputs.filter(o => !o.removable),
+                                        ...data.type.inputs
+                                    ],
+                                    outputs: [
+                                        ...spec.outputs.filter(o => !o.removable),
+                                        ...data.type.outputs
+                                    ]
+                                });
+                                onChange(name, data.value);
+                            } else {
+                                onChange(name, data);
+                            }
+                        }}
+                        onType={(data) => {
+                            if (!data) return;
+
+                            const node = getNode(id);
+
+                            updateNodeData(id, {
+                                spec: {
+                                    ...node.data.spec,
+                                    inputs: [
+
+                                    ],
+                                    outputs: [
+                                        ...node.data.spec.outputs,
+                                        ...data.outputs
+                                    ]
+                                }
+                            })
+
+                            //console.log(getNode(id));
+                        }}
                     />
                 )}
             </div>

@@ -2,8 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
     FlowState,
     Socket,
-    Variable as TVariable,
-    Type
+    Variable as TVariable
 } from "@/store/flow";
 import { StoreApi, UseBoundStore } from "zustand";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -26,9 +25,8 @@ import {
 import { Combobox } from "@/components/utils/combobox";
 import { PolyInput } from "@/components/utils/poly-input";
 import { useErrorStore } from "@/store/errors";
-import { validateStruct } from "@/utils/validate";
 import { createDefault, getDefaultValue } from "@/utils/default";
-import { Input } from "@/components/ui/input";
+import { Types } from "@/components/utils/type";
 
 type VariableProps = {
     store: UseBoundStore<StoreApi<FlowState>>;
@@ -61,7 +59,8 @@ export const createSetNodeSpec = (variable: TVariable) => ({
                 tag: "TCon",
                 tcon: {
                     name: "flow",
-                    types: []
+                    types: [],
+                    constraints: []
                 }
             }
         },
@@ -76,7 +75,8 @@ export const createSetNodeSpec = (variable: TVariable) => ({
             tag: "TCon",
             tcon: {
                 name: "flow",
-                types: []
+                types: [],
+                constraints: []
             }
         }
     }],
@@ -116,7 +116,6 @@ export const Variable: React.FC<VariableProps> = ({
 
     const [isHovered, setIsHovered] = useState(false);
     const [menu, setMenu] = useState(false);
-    const [errors, setErrors] = useState<string[]>([]);
 
     const setDefaultValue = (type) => {
         const isPrimitive = ["string", "boolean", "integer", "float"].includes(type.tcon.name);
@@ -229,23 +228,26 @@ export const Variable: React.FC<VariableProps> = ({
                 <div className="mb-2 w-full">
                     <div className="text-sm font-medium mb-2">Data Type:</div>
                     <div className="flex justify-between w-full">
-                        <Combobox
-                            name="valueType"
-                            value={selectedType}
-                            options={{
-                                default: variable.type.tcon.name,
-                                options: getTypes()
+                        <Types
+                            type={variable.type}
+                            getTypes={() => getTypes().filter(i => i !== "flow")}
+                            onChange={(type) => {
+
+                                updateVariable(variable.id, {
+                                    type,
+                                    initialValue: null
+                                });
+
+                                updateRelatedNodes(variable.id, (spec) => ({
+                                    ...spec,
+                                    outputs: spec.outputs.map((output: Socket) =>
+                                        output.name === "value" ? { ...output, type } : output
+                                    ),
+                                    inputs: spec.inputs.map((input: Socket) =>
+                                        input.name === "value" ? { ...input, type } : input
+                                    ),
+                                }));
                             }}
-                            onChange={(name, value) => handleTypeChange(value, selectedContainer)}
-                        />
-                        <Combobox
-                            name="container"
-                            value={selectedContainer}
-                            options={{
-                                default: "single",
-                                options: ["single", "array", "map"],
-                            }}
-                            onChange={(name, value) => handleTypeChange(selectedType, value)}
                         />
                     </div>
                 </div>

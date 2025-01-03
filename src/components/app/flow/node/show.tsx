@@ -7,7 +7,7 @@ import { isHandleConnected } from "@/utils/isHandleConnected";
 export const Show = ({
     id,
     data,
-    store,
+    store
 }) => {
     const edges = useEdges();
     const handleChange = useChangeNodeData(id);

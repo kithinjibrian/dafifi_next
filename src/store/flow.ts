@@ -12,22 +12,12 @@ import { report_error, request } from "@/utils/request";
 import { nanoid } from "nanoid";
 import { FileDTO } from "./file";
 import debounce from "debounce";
-
-// Types
-export type Type =
-    | { tag: "TVar", tvar: string, accept: Type[], reject: Type[] }
-    | {
-        tag: "TCon";
-        tcon: {
-            name: string;
-            types: Type[];
-        };
-    }
+import { Types } from "@kithinji/nac";
 
 export interface Variable {
     id: string;
     name: string;
-    type: Type;
+    type: Types;
     initialValue: any;
 }
 
@@ -35,12 +25,12 @@ export interface Struct {
     id: string;
     name: string;
     color: string;
-    schema: { name: string, type: Type }[];
+    schema: { name: string, type: Types }[];
 }
 
 export type Socket = {
     name: string;
-    type: Type;
+    type: Types;
     isVisible?: boolean;
 };
 
@@ -84,12 +74,12 @@ export interface FlowState {
     setEdgesInStore: (edges: Edge[]) => void;
 
     // Struct management
-    addStruct: (name?: string, schema?: Type[]) => void;
+    addStruct: (name?: string, schema?: Types[]) => void;
     updateStruct: (id: string, value: Partial<Struct>) => void;
     setSchemas: (schemas: Struct[]) => void;
 
     // Variable management
-    addVariable: (name?: string, type?: Type) => void;
+    addVariable: (name?: string, type?: Types) => void;
     updateVariable: (id: string, value: Partial<Variable>) => void;
 
     // Node-specific methods
@@ -100,7 +90,7 @@ export interface FlowState {
     fetchData: () => Promise<void>;
     pushData: () => Promise<void>;
 
-    getType: (type: Type) => string;
+    getType: (type: Types) => string;
     getTypes: () => string[];
 }
 
@@ -242,7 +232,7 @@ export const createFlowStore = async (_file: FileDTO) => {
         },
 
         // Variable management
-        addVariable: (name?: string, type?: Type, value: any = null) => {
+        addVariable: (name?: string, type?: Types, value: any = null) => {
             const va = get().variables.find(v => v.name == name);
 
             if (va) {
@@ -316,6 +306,7 @@ export const createFlowStore = async (_file: FileDTO) => {
 
                 return { nodes: updatedNodes };
             });
+
             push(get());
         },
         getNode: (id) => get().nodes.find((node) => node.id === id),
@@ -355,13 +346,14 @@ export const createFlowStore = async (_file: FileDTO) => {
 
             return basic
         },
-        getType: (type: Type) => {
+        getType: (type: Types) => {
             const basic: Record<string, string> = {
                 integer: "green",
                 float: "cyan",
                 string: "gold",
                 boolean: "red",
                 flow: "dodgerblue",
+                nac: "teal",
                 any: "grey"
             }
 
