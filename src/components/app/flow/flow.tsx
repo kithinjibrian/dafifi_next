@@ -30,8 +30,8 @@ import { HM, Types } from "@kithinji/nac";
 const EDGE_TYPES = { flowedge: FlowEdge };
 
 const createEdgeData = (getType: Function, sourceType: Types, targetType: Types) => {
-    const t = getType(sourceType);
-    const t2 = getType(targetType);
+    const t = getType(sourceType) ?? "pink";
+    const t2 = getType(targetType) ?? "pink";
     return {
         gradientColors: [t, t2],
         dashed: t == "dodgerblue",
@@ -206,16 +206,10 @@ export const Flow = ({ store, customNodeTypes }) => {
         }
 
         if (sourceOutput.type.tag == "TRec") {
-            const name = sourceOutput.type.trec.name;
-            const struct = [...schemas, ...structs].find((s) => s.trec.name === name);
-            if (struct) {
-                targetNode.data.spec[fieldKey] = mergeStrategy(targetNode.data.spec[fieldKey], struct);
-                return true;
-            } else {
-                log_error(`Struct not found for type: ${type}`);
-            }
+            targetNode.data.spec[fieldKey] = mergeStrategy(targetNode.data.spec[fieldKey], sourceOutput.type);
+            return true;
         } else {
-            log_error(`Type Mismatch: Type '${type}' is not a struct`);
+            log_error(`Type Mismatch: Type '${sourceOutput.type.trec.name}' is not a struct`);
         }
         return false;
     }
@@ -235,6 +229,7 @@ export const Flow = ({ store, customNodeTypes }) => {
                 log_error(`Failed to create edge for connection: ${connection}`);
                 return;
             }
+
 
             if (targetNode?.data.spec.adapt_output == connection.targetHandle) {
                 const sourceNode = getNode(connection.source);

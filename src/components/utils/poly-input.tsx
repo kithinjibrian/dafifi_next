@@ -1,6 +1,6 @@
 "use client"
 
-import { builtin, Lexer, Nac, Parser, TypeChecker, Types } from "@kithinji/nac";
+import { builtin, Lexer, Nac, Parser, showTypeClass, TypeChecker, Types } from "@kithinji/nac";
 
 import { Input } from "@/components/ui/input"
 import { Type } from "@/store/flow"
@@ -18,7 +18,7 @@ import {
 import { setDefaultValue } from "./default";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
-import { parse } from "@/utils/compiler";
+import { parse, structTypeClass } from "@/utils/compiler";
 import { Trash } from "lucide-react";
 import { validateStruct } from "@/utils/validate";
 import { ScrollArea } from "../ui/scroll-area";
@@ -177,16 +177,17 @@ const Generic: React.FC<PolyInputProps> = (props) => {
 
 const NacCode: React.FC<PolyInputProps> = ({
     type,
-    structs,
     name,
     value,
-    onChange,
-    onType
+    onChange
 }) => {
     const [errors, setErrors] = useState<string[]>([]);
     const [isOpen, setIsOpen] = useState(false);
 
-    const [editorValue, setEditorValue] = useState(value || setDefaultValue(type, structs))
+    const [editorValue, setEditorValue] = useState(value || `fun main() {
+    return "Hello, World!";
+}
+`)
 
     const handleEditorChange = (newValue: string) => {
         setEditorValue(newValue)
@@ -217,6 +218,15 @@ const NacCode: React.FC<PolyInputProps> = ({
             if (!o) return;
 
             if (o.tag == "TCon" && o.tcon.name == "->") {
+
+                o.tcon.types.map(type => {
+                    switch (type.tag) {
+                        case "TRec": {
+                            type.trec.constraints = [showTypeClass, structTypeClass]
+                        }
+                    }
+                })
+
                 const ret = o.tcon.types.pop();
                 data = {
                     inputs: o.tcon.types.map((type, index) => ({ name: `in${index}`, type, removable: true })),
@@ -507,20 +517,5 @@ export const PolyInput: React.FC<PolyInputProps> = (props) => {
         case "TRec": {
             return <Struct {...props} />
         }
-    }
-    if (type.tag == "TVar") return (<></>);
-
-    if (type.tcon.name.startsWith("struct")) {
-        return <Struct {...props} />
-    } else if (type.tcon.name == "array") {
-        return <ArrayInput {...props} />
-    } else if (type.tcon.name == "map") {
-        return <Map {...props} />
-    } else if (type.tcon.name == "boolean") {
-        return <Boolean {...props} />
-    } else if (type.tcon.name == "nac") {
-        return <NacCode {...props} />
-    } else {
-        return <Generic {...props} />
     }
 }
