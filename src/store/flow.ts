@@ -12,7 +12,8 @@ import { report_error, request } from "@/utils/request";
 import { nanoid } from "nanoid";
 import { FileDTO } from "./file";
 import debounce from "debounce";
-import { Types } from "@kithinji/nac";
+import { showTypeClass, Types } from "@kithinji/nac";
+import { anyTypeClass, structTypeClass } from "@/utils/compiler";
 
 export interface Variable {
     id: string;
@@ -57,7 +58,7 @@ export interface FlowState {
     nodes: Node[];
     edges: Edge[];
     variables: Variable[];
-    structs: Struct[];
+    structs: any[];
     schemas: Struct[];
     tab: string;
     selectedNode: Node | null;
@@ -189,7 +190,7 @@ export const createFlowStore = async (_file: FileDTO) => {
             push(get());
         },
 
-        addStruct: (name?: string, schema?: any[]) => {
+        addStruct: (name?: string, types: Record<string, Types> = {}) => {
             const struct = get().structs.find((s) => s.name == name);
 
             if (struct)
@@ -199,10 +200,14 @@ export const createFlowStore = async (_file: FileDTO) => {
                 structs: [
                     ...(state.structs || []),
                     {
+                        tag: "TRec",
                         id: nanoid(),
-                        name: name ?? `struct MyStruct${state.structs.length}`,
                         color: "magenta",
-                        schema: schema ?? [],
+                        trec: {
+                            name: name ?? "NewStruct",
+                            types,
+                            constraints: [showTypeClass, structTypeClass, anyTypeClass]
+                        }
                     },
                 ],
             }));
@@ -360,7 +365,7 @@ export const createFlowStore = async (_file: FileDTO) => {
             const c = [...get().schemas, ...get().structs];
 
             c.forEach((struct) => {
-                basic[struct.name] = struct.color;
+                basic[struct.trec.name] = struct.color;
             });
 
             if (type.tag == "TCon") {
@@ -374,6 +379,8 @@ export const createFlowStore = async (_file: FileDTO) => {
                 }
 
                 return basic[type.tcon.name];
+            } else if (type.tag == "TRec") {
+                return basic[type.trec.name]
             }
 
             return basic["any"];

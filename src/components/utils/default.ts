@@ -1,24 +1,39 @@
-import { Type } from "@/store/flow";
-import { createDefault, getDefaultValue } from "@/utils/default";
+import { Types } from "@kithinji/nac";
 
-export const setDefaultValue = (type: Type, structs) => {
-
-    if (type.tag == "TVar") return "";
-
-    const isPrimitive = ["string", "boolean", "integer", "float"].includes(type.tcon.name);
-    if (isPrimitive) {
-        return getDefaultValue(type.tcon.name);
-    } else {
-        const elemType = type.tcon.types[0];
-        if (type.tcon.name == "array" || type.tcon.name == "map") {
-            return setDefaultValue(elemType, structs);
-        } else {
-            const struct = structs.find((struct) => struct.name === type.tcon.name);
-            if (struct) {
-                return JSON.stringify(createDefault(struct.schema, structs), null, 2);
-            }
-        }
+function getDefaultValue(primitiveType: string): any {
+    switch (primitiveType) {
+        case "string":
+            return "";
+        case "boolean":
+            return false;
+        case "integer":
+            return 0;
+        case "float":
+            return 0.0;
+        default:
+            throw new Error(`Unknown primitive type: ${primitiveType}`);
     }
+}
 
-    return "";
+export const setDefaultValue = (type: Types): string => {
+    switch (type.tag) {
+        case "TVar":
+            return "";
+        case "TCon": {
+            const isPrimitive = ["string", "boolean", "integer", "float"].includes(type.tcon.name);
+            if (isPrimitive) {
+                return getDefaultValue(type.tcon.name);
+            }
+            // return type.tcon.types.map(setDefaultValue);
+        }
+        case "TRec": {
+            const defaults: Record<string, any> = {};
+            for (const [key, subType] of Object.entries(type.trec.types)) {
+                defaults[key] = setDefaultValue(subType);
+            }
+            return JSON.stringify(defaults, null, 4);
+        }
+        default:
+            return ""
+    }
 };

@@ -154,6 +154,11 @@ export const Flow = ({ store, customNodeTypes }) => {
 
         try {
             const hm = new HM();
+
+            Object.assign(hm.opts, {
+                unifyTVars: false
+            })
+
             hm.constraint_eq(
                 sourceOutput.type,
                 targetInput.type
@@ -200,11 +205,11 @@ export const Flow = ({ store, customNodeTypes }) => {
             return false;
         }
 
-        const type = sourceOutput.type.tcon.name;
-        if (type.startsWith("struct")) {
-            const struct = [...schemas, ...structs].find((s) => s.name === type);
+        if (sourceOutput.type.tag == "TRec") {
+            const name = sourceOutput.type.trec.name;
+            const struct = [...schemas, ...structs].find((s) => s.trec.name === name);
             if (struct) {
-                targetNode.data.spec[fieldKey] = mergeStrategy(targetNode.data.spec[fieldKey], struct.schema);
+                targetNode.data.spec[fieldKey] = mergeStrategy(targetNode.data.spec[fieldKey], struct);
                 return true;
             } else {
                 log_error(`Struct not found for type: ${type}`);
@@ -238,7 +243,14 @@ export const Flow = ({ store, customNodeTypes }) => {
                     sourceNode,
                     connection.sourceHandle,
                     'outputs',
-                    (original, schema) => schema
+                    (original, struct) => {
+                        return Object.entries(struct.trec.types).map(([key, value]) => {
+                            return {
+                                name: key,
+                                type: value
+                            }
+                        })
+                    }
                 );
 
                 if (!didAdapt) {
@@ -254,20 +266,23 @@ export const Flow = ({ store, customNodeTypes }) => {
                     sourceNode,
                     connection.sourceHandle,
                     'inputs',
-                    (original, schema) => original.concat(schema) // stop concat
+                    (original, struct) => {
+                        const orig = original.filter(i => !i.removable);
+                        const n = Object.entries(struct.trec.types).map(([key, value]) => {
+                            return {
+                                name: key,
+                                type: value,
+                                removable: true
+                            }
+                        })
+
+                        return [...orig, ...n];
+                    }
                 );
 
                 if (!didAdapt) {
                     targetNode.data.spec.inputs = targetInput;
                     setEdges((edges) => edges.filter((e) => e.id !== edge.id));
-                } else {
-                    updateNodeData(targetNode.id, {
-                        ...targetNode.data,
-                        spec: {
-                            ...targetNode.data.spec,
-                            adapt_input: false
-                        }
-                    })
                 }
             }
         } catch (e) {

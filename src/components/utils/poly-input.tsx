@@ -276,7 +276,7 @@ const Struct: React.FC<PolyInputProps> = ({
     const [errors, setErrors] = useState<string[]>([]);
     const [isOpen, setIsOpen] = useState(false);
 
-    const [editorValue, setEditorValue] = useState(value || setDefaultValue(type, structs))
+    const [editorValue, setEditorValue] = useState(value || setDefaultValue(type))
 
     const handleEditorChange = (newValue: string) => {
         setEditorValue(newValue)
@@ -287,8 +287,7 @@ const Struct: React.FC<PolyInputProps> = ({
 
         if (!open) {
             const newErrors: string[] = [];
-            const struct = structs.find(s => s.name == type.tcon.name);
-            validateStruct(editorValue, struct.schema, newErrors);
+            validateStruct(editorValue, type, newErrors);
             setErrors(newErrors);
 
             if (newErrors.length > 0)
@@ -491,6 +490,24 @@ const Map: React.FC<PolyInputProps> = (props) => {
 
 export const PolyInput: React.FC<PolyInputProps> = (props) => {
     let type = props.type;
+    switch (type.tag) {
+        case "TVar":
+            return (<></>);
+        case "TCon": {
+            if (type.tcon.name == "array") {
+                return <ArrayInput {...props} />
+            } else if (type.tcon.name == "boolean") {
+                return <Boolean {...props} />
+            } else if (type.tcon.name == "nac") {
+                return <NacCode {...props} />
+            } else {
+                return <Generic {...props} />
+            }
+        }
+        case "TRec": {
+            return <Struct {...props} />
+        }
+    }
     if (type.tag == "TVar") return (<></>);
 
     if (type.tcon.name.startsWith("struct")) {

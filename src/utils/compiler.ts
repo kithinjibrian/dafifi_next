@@ -20,7 +20,9 @@ export const parse = (code: string): Types | void => {
     const p = new Parser(tks);
     const ast = p.type();
 
-    const t = new TypeChecker([
+    const t = new TypeChecker({
+        unifyTVars: true
+    }, [
         "string",
         "integer",
         "float",

@@ -7,36 +7,21 @@ import { PolyInput } from "@/components/utils/poly-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { anyTypeClass, parse, structTypeClass } from "@/utils/compiler";
 import { showTypeClass } from "@kithinji/nac/dist/typechecker/type";
+import { nanoid } from "nanoid";
 
 const STRUCT_PREFIX = "struct ";
 
-const createToStruct = (type: string) => ({
-    label: `To ${type}`,
+const createToStruct = (struct) => ({
+    label: `To ${struct.trec.name}`,
     own_spec: true,
     category: "Action",
-    inputs: [
-        {
-            name: "value",
-            type: {
-                tag: "TCon",
-                tcon: {
-                    name: `struct ${type}`,
-                    types: [],
-                    constraints: [showTypeClass, structTypeClass, anyTypeClass]
-                }
-            }
-        },
-    ],
+    inputs: [{
+        name: "value",
+        type: struct
+    }],
     outputs: [{
         name: "struct",
-        type: {
-            tag: "TCon",
-            tcon: {
-                name: `struct ${type}`,
-                types: [],
-                constraints: [showTypeClass, structTypeClass, anyTypeClass]
-            }
-        }
+        type: struct
     }],
 });
 
@@ -63,25 +48,38 @@ export const Struct = ({ store, struct, onSelectNode }) => {
     }, [updateStruct, struct.id, struct.schema]);
 
     const handleAddField = useCallback(() => {
-        const schema = [...struct.schema];
-        schema.unshift({
-            name: `field${schema.length}`,
-            type: parse("integer")
+        const newFieldName = `field${nanoid(3).toUpperCase()}`;
+        const newType = parse("integer");
+
+        updateStruct(struct.id, {
+            trec: {
+                ...struct.trec,
+                types: {
+                    ...struct.trec.types,
+                    [newFieldName]: newType,
+                },
+            },
         });
-        updateStruct(struct.id, { schema });
-    }, [updateStruct, struct.id, struct.schema]);
+    }, [updateStruct, struct.id, struct.trec]);
 
     const handleFieldTypeChange = useCallback((name, type) => {
-        const updatedSchema = struct.schema.map(s =>
-            s.name === name ? { ...s, type } : s
-        );
-        updateStruct(struct.id, { schema: updatedSchema });
-    }, [updateStruct, struct.id, struct.schema]);
+        const updatedTypes = {
+            ...struct.trec.types,
+            [name]: type,
+        };
+
+        updateStruct(struct.id, {
+            trec: {
+                ...struct.trec,
+                types: updatedTypes,
+            },
+        });
+    }, [updateStruct, struct.id, struct.trec]);
 
     const handleSelectNode = useCallback(() => {
         onSelectNode({
             type: "struct/tostruct",
-            ...createToStruct(struct.name.split(" ").slice(1).join(" ") || ""),
+            ...createToStruct(struct),
         });
     }, [onSelectNode, struct.name]);
 
@@ -108,7 +106,7 @@ export const Struct = ({ store, struct, onSelectNode }) => {
                         suppressContentEditableWarning
                         spellCheck={false}
                         onBlur={handleNameChange}
-                    >{struct.name.split(" ").slice(1).join(" ") || ""}</p>
+                    >{struct.trec.name}</p>
                 </div>
                 <div className={`flex items-center transition-opacity duration-200 ${isHovered ? "opacity-100 bg-background" : "opacity-0"}`}>
                     <Button
@@ -155,7 +153,7 @@ const RenderSettings = ({ struct, getTypes, handleAddField, handleFieldNameChang
         <Card className="border-0 bg-background">
             <CardHeader>
                 <CardTitle>Additional Settings</CardTitle>
-                <CardDescription>Struct ({struct.name.split(" ")[1]}) Settings</CardDescription>
+                <CardDescription>Struct ({struct.trec.name}) Settings</CardDescription>
             </CardHeader>
             <CardContent className="p-2">
                 <Button
@@ -165,7 +163,7 @@ const RenderSettings = ({ struct, getTypes, handleAddField, handleFieldNameChang
                     Add Field
                 </Button>
 
-                {struct.schema.map(({ name, type }, index) => (
+                {Object.entries(struct.trec.types).map(([name, type], index) => (
                     <div key={index} className="mb-3">
                         <PolyInput
                             name=""

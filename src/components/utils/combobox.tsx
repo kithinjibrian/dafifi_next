@@ -91,9 +91,9 @@ export const Combobox: React.FC<ComboboxProps> = ({
                     <CommandList>
                         <CommandEmpty>No option found.</CommandEmpty>
                         <CommandGroup>
-                            {opts.map((option) => (
+                            {opts.map((option, index) => (
                                 <CommandItem
-                                    key={option}
+                                    key={index}
                                     value={option}
                                     onSelect={handleSelect}
                                 >

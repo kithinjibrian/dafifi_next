@@ -1,3 +1,4 @@
+import { Types } from '@kithinji/nac';
 import { Handle } from '@xyflow/react';
 import { Braces, Brackets, Circle, LayoutPanelTop, Play, Square, Table } from 'lucide-react';
 
@@ -21,7 +22,8 @@ export const NodeHandle = ({
         object: Table,
         set: Braces,
         flow: Play,
-        any: Square
+        any: Square,
+        struct: LayoutPanelTop
     };
 
     // Icon positioning styles
@@ -42,20 +44,34 @@ export const NodeHandle = ({
     };
 
     // Select the correct icon dynamically
-    let SelectedIcon = Icon[type.tag == "TVar" ? "any" : type.tcon.name];
+    function s(type: Types) {
+        switch (type.tag) {
+            case "TVar":
+                return "any";
+            case "TCon":
+                return type.tcon.name;
+            case "TRec":
+                return type.trec.name;
+            default:
+                return ""
+        }
+    }
 
+    let t = s(type);
 
-    if (!SelectedIcon && type.tcon.name.startsWith("struct"))
-        SelectedIcon = LayoutPanelTop;
+    if (type.tag == "TRec" && type.trec.name !== "map") {
+        t = "struct";
+    }
+
+    let SelectedIcon = Icon[t];
 
     return (
         <Handle
             id={id}
             type={handle_type}
             position={position}
-            style={{ ...style, border: 'none', background: 'transparent' }} // Hide default handle style
+            style={{ ...style, border: 'none', background: 'transparent' }}
         >
-            {/* Render the selected icon inside the handle */}
             <SelectedIcon
                 size={14}
                 className={className}
@@ -63,7 +79,7 @@ export const NodeHandle = ({
                     ...iconStyles,
                     ...offsets[position]
                 }}
-                color={style.background} // You can customize the color of the icon
+                color={style.background}
             />
         </Handle>
     );

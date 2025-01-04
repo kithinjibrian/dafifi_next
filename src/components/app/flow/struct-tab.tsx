@@ -13,7 +13,7 @@ export const StructTab = ({
     store: UseBoundStore<StoreApi<FlowState>>
 }) => {
     const { rawSchemas } = useProjectStore();
-    const { structs, addStruct, setSchemas, updateStruct } = store();
+    const { structs, addStruct, setSchemas } = store();
 
     const new_struct = useMemo(() => [...rawSchemas, ...structs], [rawSchemas, structs]);
 
