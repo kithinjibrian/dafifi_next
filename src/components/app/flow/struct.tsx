@@ -5,8 +5,7 @@ import { Types } from "@/components/utils/type";
 import { Button } from "@/components/ui/button";
 import { PolyInput } from "@/components/utils/poly-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { anyTypeClass, parse, structTypeClass } from "@/utils/compiler";
-import { showTypeClass } from "@kithinji/nac/dist/typechecker/type";
+import {  parse } from "@/utils/compiler";
 import { nanoid } from "nanoid";
 
 const STRUCT_PREFIX = "struct ";

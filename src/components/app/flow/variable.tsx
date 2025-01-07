@@ -123,7 +123,7 @@ export const Variable: React.FC<VariableProps> = ({
             return getDefaultValue(type.tcon.name);
         } else {
             const elemType = type.tcon.types[0];
-            if (type.tcon.name == "array" || type.tcon.name == "map") {
+            if (type.tcon.name == "Array" || type.tcon.name == "Map") {
                 return setDefaultValue(elemType);
             } else {
                 const struct = structs.find((struct) => struct.name === type.tcon.name);
@@ -137,7 +137,7 @@ export const Variable: React.FC<VariableProps> = ({
     };
 
     const isPrimitive = useMemo(() =>
-        ["string", "boolean", "integer", "float", "array", "map"].includes(variable.type.tcon.name),
+        ["string", "boolean", "integer", "float", "Array", "Map"].includes(variable.type.tcon.name),
         [variable.type.tcon.name]
     );
 
@@ -181,7 +181,7 @@ export const Variable: React.FC<VariableProps> = ({
         setSelectedType(type);
         setSelectedContainer(container);
 
-        const tcon: Type = {
+        const tcon = {
             tag: "TCon",
             tcon: {
                 name: "",

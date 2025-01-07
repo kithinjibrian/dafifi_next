@@ -83,7 +83,7 @@ export const Types = ({
                 value={selectedContainer}
                 options={{
                     default: "single",
-                    options: ["single", "array", "map"],
+                    options: ["single", "Array", "Map"],
                 }}
                 onChange={(name, value) => handleTypeChange(selectedType, value)}
             />

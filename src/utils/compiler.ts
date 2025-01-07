@@ -1,10 +1,13 @@
-import { Lexer, TypeChecker, Parser, Types } from "@kithinji/nac";
-import { eqTypeClass, numericTypeClass, ordTypeClass, showTypeClass } from "@kithinji/nac/dist/typechecker/type";
-
-export const structTypeClass = {
-    name: "Struct",
-    methods: []
-};
+import {
+    Lexer,
+    TypeChecker,
+    Parser,
+    Types,
+    eqTypeClass,
+    numericTypeClass,
+    ordTypeClass,
+    showTypeClass
+} from "@kithinji/nac";
 
 export const anyTypeClass = {
     name: "Any",
@@ -31,7 +34,6 @@ export const parse = (code: string): Types | void => {
         "nac"
     ])
 
-    t.global.symbol_table.set("tc:Struct", structTypeClass);
     t.global.symbol_table.set("tc:Any", anyTypeClass);
 
     t.global.symbol_table.set("tcon:integer", [
@@ -59,7 +61,7 @@ export const parse = (code: string): Types | void => {
         showTypeClass
     ])
 
-    const ty = t.run(ast, {});
+    const ty = t._run(ast, {});
 
     if (ty !== undefined)
         return ty;

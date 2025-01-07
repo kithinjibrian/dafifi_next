@@ -17,10 +17,10 @@ export function createDefault(schema, structs, visited = new Set()) {
             defaultValue[key] = 0;
         } else if (typeName === 'boolean') {
             defaultValue[key] = false;
-        } else if (typeName === 'array') {
+        } else if (typeName === 'Array') {
             const arrayItemType = childTypes[0]?.tcon.name;
             defaultValue[key] = [getDefaultValue(arrayItemType)];
-        } else if (typeName === 'map') {
+        } else if (typeName === 'Map') {
             defaultValue[key] = {};
         } else {
             const struct = structs.find(struct => struct.name === typeName);

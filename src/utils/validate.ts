@@ -27,16 +27,16 @@ function validateValue(value: any, type: Types, errors: string[], path = ""): bo
         case "TCon": {
             const expectedType = type.tcon.name;
             const jsType = Array.isArray(value)
-                ? "array"
+                ? "Array"
                 : value === null
                     ? "null"
                     : typeof value;
 
-            if (expectedType === "array") {
+            if (expectedType === "Array") {
                 return validateArray(value, type.tcon.types[0], errors, path);
             }
 
-            if (expectedType === "map") {
+            if (expectedType === "Map") {
                 return validateMap(value, type.tcon.types[0], errors, path);
             }
 
@@ -103,7 +103,8 @@ function isTypeMatch(jsType: string, schemaType: string): boolean {
         integer: "number",
         float: "number",
         boolean: "boolean",
-        array: "array",
+        array: "Array",
+        map: "Map",
         object: "object",
         null: "null",
     };

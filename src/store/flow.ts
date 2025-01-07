@@ -12,8 +12,8 @@ import { report_error, request } from "@/utils/request";
 import { nanoid } from "nanoid";
 import { FileDTO } from "./file";
 import debounce from "debounce";
-import { showTypeClass, Types } from "@kithinji/nac";
-import { anyTypeClass, structTypeClass } from "@/utils/compiler";
+import { showTypeClass, structTypeClass, Types } from "@kithinji/nac";
+import { anyTypeClass } from "@/utils/compiler";
 
 export interface Variable {
     id: string;
