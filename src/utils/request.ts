@@ -8,7 +8,6 @@ export const request = axios.create({
 });
 
 export const setupInterceptors = () => {
-
     request.interceptors.request.use(
         (config) => {
             return config;

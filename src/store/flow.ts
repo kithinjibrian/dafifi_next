@@ -194,7 +194,7 @@ export const createFlowStore = async (_file: FileDTO) => {
             const struct = get().structs.find((s) => s.name == name);
 
             if (struct)
-                return;
+                return struct;
 
             set((state) => ({
                 structs: [
