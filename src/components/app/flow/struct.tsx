@@ -5,7 +5,7 @@ import { Types } from "@/components/utils/type";
 import { Button } from "@/components/ui/button";
 import { PolyInput } from "@/components/utils/poly-input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {  parse } from "@/utils/compiler";
+import { parse } from "@/utils/compiler";
 import { nanoid } from "nanoid";
 
 const STRUCT_PREFIX = "struct ";
@@ -33,17 +33,29 @@ export const Struct = ({ store, struct, onSelectNode }) => {
     // Handlers
     const handleNameChange = useCallback((e) => {
         const name = e.target.innerText;
-        updateStruct(struct.id, { name: `${STRUCT_PREFIX}${name}` });
+        updateStruct(struct.id, {
+            trec: {
+                ...struct.trec,
+                name
+            }
+        });
     }, [updateStruct, struct.id]);
 
     const handleToggleMenu = useCallback(() => setMenu(prevMenu => !prevMenu), []);
 
-    const handleFieldNameChange = useCallback((struct, index, val) => {
-        const updatedSchema = struct.schema.map((s, i) =>
-            i === index ? { ...s, name: val } : s
-        );
+    const handleFieldNameChange = useCallback((struct, name, val) => {
+        const type = struct.trec.types[name]
+        delete struct.trec.types[name];
 
-        updateStruct(struct.id, { schema: updatedSchema });
+        updateStruct(struct.id, {
+            trec: {
+                ...struct.trec,
+                types: {
+                    ...struct.trec.types,
+                    [val]: type
+                }
+            }
+        });
     }, [updateStruct, struct.id, struct.schema]);
 
     const handleAddField = useCallback(() => {
@@ -80,7 +92,7 @@ export const Struct = ({ store, struct, onSelectNode }) => {
             type: "struct/tostruct",
             ...createToStruct(struct),
         });
-    }, [onSelectNode, struct.name]);
+    }, [onSelectNode, struct]);
 
     const handleDelete = useCallback(() => {
         deleteStruct(struct.id)
@@ -168,7 +180,7 @@ const RenderSettings = ({ struct, getTypes, handleAddField, handleFieldNameChang
                             name=""
                             type={parse("string")}
                             value={name ?? ""}
-                            onChange={(_, val) => handleFieldNameChange(struct, index, val)}
+                            onChange={(_, val) => handleFieldNameChange(struct, name, val)}
                         />
                         <Types
                             type={type}

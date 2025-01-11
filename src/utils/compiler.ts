@@ -24,7 +24,8 @@ export const parse = (code: string): Types | void => {
     const ast = p.type();
 
     const t = new TypeChecker({
-        unifyTVars: true
+        unifyTVars: true,
+        type_param_is_tvar: true
     }, [
         "string",
         "integer",
