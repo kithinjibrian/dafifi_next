@@ -30,7 +30,7 @@ export const FileExplorer = () => {
         }
     }, [project]);
 
-    const open = (node) => {
+    const open = async (node) => {
         if (node.isLeaf) {
 
             if (node.data.ext == "") {
@@ -38,7 +38,7 @@ export const FileExplorer = () => {
                 return;
             }
 
-            addTab({
+            await addTab({
                 ...node.data,
                 uuid: getUUID(node.data.id),
             });

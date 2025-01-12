@@ -14,11 +14,13 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
+
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 
 import { TypingAnimation } from "@/components/utils/type-animation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { LoadingButton } from "@/components/utils/button";
+import { useState } from "react";
 
 const formSchema = z.object({
     username: z.string().min(2).max(20),
@@ -32,6 +34,7 @@ const formSchema = z.object({
 })
 
 export default function Login() {
+    const [isLoading, setIsLoading] = useState(false);
     const isMobile = useIsMobile();
     const router = useRouter()
     const { login } = useAuthStore();
@@ -45,6 +48,7 @@ export default function Login() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsLoading(true)
         try {
             await login(values.username, values.password);
             router.push("/project")
@@ -52,6 +56,8 @@ export default function Login() {
             form.setError("root", {
                 message: "Invalid username or password"
             });
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -104,9 +110,13 @@ export default function Login() {
                                     </FormItem>
                                 )}
                             />
-                            < Button
+                            <LoadingButton
+                                isLoading={isLoading}
                                 className="bg-sky-500 text-foreground w-full"
-                                type="submit" >Login</Button >
+                                type="submit"
+                            >
+                                Login
+                            </LoadingButton>
                         </form >
                     </Form >
                 </div>

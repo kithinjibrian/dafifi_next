@@ -47,6 +47,9 @@ const createProjectSlice: StateCreator<
         } catch (e) {
             report_error(e);
         }
+    },
+    shareProject: async () => {
+        
     }
 })
 

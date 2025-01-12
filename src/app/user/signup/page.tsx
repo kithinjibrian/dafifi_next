@@ -4,7 +4,7 @@ import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Button } from "@/components/ui/button"
+import { useRouter } from 'next/navigation'
 
 import {
     Form,
@@ -21,6 +21,8 @@ import { useAuthStore } from "@/store/auth";
 import { request } from "@/utils/request"
 import { TypingAnimation } from "@/components/utils/type-animation"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useState } from "react"
+import { LoadingButton } from "@/components/utils/button"
 
 const formSchema = z.object({
     username: z.string().min(2).max(20),
@@ -35,8 +37,10 @@ const formSchema = z.object({
 })
 
 export default function Signup() {
+    const [isLoading, setIsLoading] = useState(false);
     const isMobile = useIsMobile();
     const { login } = useAuthStore();
+    const router = useRouter()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -48,13 +52,17 @@ export default function Signup() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsLoading(true)
         try {
             await request.post("/user/create", values);
             await login(values.username, values.password);
+            router.push("/project")
         } catch (e) {
             form.setError("root", {
                 message: "Error creating account."
             });
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -122,9 +130,13 @@ export default function Signup() {
                                     </FormItem>
                                 )}
                             />
-                            < Button
+                            <LoadingButton
+                                isLoading={isLoading}
                                 className="bg-sky-500 text-foreground w-full"
-                                type="submit" >Signup</Button >
+                                type="submit"
+                            >
+                                Signup
+                            </LoadingButton>
                         </form >
                     </Form >
                 </div>

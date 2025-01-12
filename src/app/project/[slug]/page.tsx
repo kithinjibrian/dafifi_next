@@ -53,14 +53,12 @@ export default function ProjectApp() {
 
     return (
         <>
-            {project ? (
+            {project && (
                 <>
                     <Header />
                     <RenderPanels panels={panels} direction="horizontal" />
                     <StatusBar />
                 </>
-            ) : (
-                <h1>Could not find project</h1>
             )}
         </>
     );

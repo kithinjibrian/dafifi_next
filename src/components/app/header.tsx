@@ -1,4 +1,4 @@
-import { BugPlay, Pause, Play } from "lucide-react";
+import { BugPlay, Pause, Play, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Menubar,
@@ -11,10 +11,17 @@ import {
 
 import { useProjectStore } from "@/store/project";
 import { ModeToggle } from "../utils/mode-toggle";
-import Link from "next/link";
+import { LoadingButton } from "../utils/button";
+import { useState } from "react";
 
 export const Header = () => {
+    const [isLoading, setIsLoading] = useState([false, false])
     const { project, updateProject } = useProjectStore();
+
+    const setLoading = (index, value) => {
+        const s = isLoading.map((bool, n) => n == index ? value : bool)
+        setIsLoading(s);
+    }
 
     return (
         <div className="flex w-full border h-[40px]">
@@ -46,12 +53,21 @@ export const Header = () => {
             </div>
             <div className="ml-auto flex items-center space-x-2">
                 {project?.state === "running" || project?.state === "queued" ? (
-                    <Button
+                    <LoadingButton
+                        isLoading={isLoading[0]}
                         variant="ghost"
-                        onClick={() => updateProject({ state: "stopped" })}>
+                        onClick={async () => {
+                            setLoading(0, true)
+                            try {
+                                await updateProject({ state: "stopped" })
+                            } finally {
+                                setLoading(0, false)
+                            }
+                        }}
+                    >
                         <Pause size={20} strokeWidth={1.5} />
                         <span>Pause</span>
-                    </Button>
+                    </LoadingButton>
                 ) : (
                     <Button
                         variant="ghost"
@@ -66,11 +82,20 @@ export const Header = () => {
                         <span>Pause</span>
                     </Button>
                 ) : (
-                    <Button variant="ghost">
+                    <Button disabled variant="ghost">
                         <BugPlay size={20} strokeWidth={1.5} />
                         <span>Debug</span>
                     </Button>
                 )}
+                <LoadingButton
+                    disabled
+                    isLoading={isLoading[1]}
+                    variant="ghost"
+                    onClick={() => { }}
+                >
+                    <Share2 size={20} strokeWidth={1.5} />
+                    <span>Share</span>
+                </LoadingButton>
                 <ModeToggle />
             </div>
         </div>

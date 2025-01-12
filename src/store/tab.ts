@@ -12,6 +12,7 @@ import { createGuiStore } from "./gui";
 export interface TabStoreDTO {
     tabs: FileDTO[],
     activeTab: string,
+    loadingTabs: any[],
     addTab: (file: FileDTO) => void,
     removeTab: (id: string) => void,
     setActiveTab: (id: string) => void,
@@ -22,19 +23,19 @@ const createStore = async (file: FileDTO | undefined) => {
 
     switch (file.ext) {
         case "flw": {
-            return createFlowStore(file);
+            return await createFlowStore(file);
         }
         case "txt": {
-            return createCodeStore(file);
+            return await createCodeStore(file);
         }
         case "ui": {
-            return createGuiStore(file);
+            return await createGuiStore(file);
         }
         case "req": {
-            return createClientStore(null);
+            return await createClientStore(null);
         }
         case "tab": {
-            return createTableStore(file);
+            return await createTableStore(file);
         }
         default:
             return null;
@@ -58,31 +59,42 @@ export const createTabSlice: StateCreator<
     }],
     activeTab: welcomeUUID,
     setActiveTab: (uuid: string) => set({ activeTab: uuid }),
+    loadingTabs: [],
     addTab: async (file: FileDTO) => {
-        const tabExists = get().tabs.some(tab => tab.uuid === file.uuid);
+        if (get().loadingTabs?.includes(file.uuid)) {
+            return;
+        }
 
+        const tabExists = get().tabs.some(tab => tab.uuid === file.uuid);
         if (tabExists) {
             set({ activeTab: file.uuid });
             return;
         }
 
-        if (!file.store) {
-            file.store = await createStore(file);
+        set({ loadingTabs: [...(get().loadingTabs || []), file.uuid] });
+
+        try {
+            if (!file.store) {
+                file.store = await createStore(file);
+            }
+
+            const updateTabs = [...get().tabs];
+            const activeTabIndex = get().tabs.findIndex((tab) => tab.id === +get().activeTab);
+            if (activeTabIndex !== -1) {
+                updateTabs.splice(activeTabIndex + 1, 0, file);
+            } else {
+                updateTabs.push(file);
+            }
+
+            set({
+                tabs: updateTabs,
+                activeTab: file.uuid
+            });
+        } finally {
+            set({
+                loadingTabs: get().loadingTabs?.filter(id => id !== file.uuid)
+            });
         }
-
-        const updateTabs = [...get().tabs];
-        const activeTabIndex = get().tabs.findIndex((tab) => tab.id === +get().activeTab);
-
-        if (activeTabIndex !== -1) {
-            updateTabs.splice(activeTabIndex + 1, 0, file);
-        } else {
-            updateTabs.push(file);
-        }
-
-        set({
-            tabs: updateTabs,
-            activeTab: file.uuid
-        })
     },
     removeTab: (uuid: string) => {
         set({

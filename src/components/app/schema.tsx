@@ -53,7 +53,7 @@ export const Schemas = () => {
                 ]
             });
 
-            addTab({
+            await addTab({
                 id: schema.id,
                 uuid: getUUID(schema.id),
                 name: schema.tableName,
@@ -103,8 +103,8 @@ export const Schemas = () => {
                                     });
                                 }
                             }}
-                            onClick={() => {
-                                addTab({
+                            onClick={async () => {
+                                await addTab({
                                     id: schema.id,
                                     uuid: getUUID(schema.id),
                                     name: schema.tableName,

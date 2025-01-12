@@ -6,7 +6,8 @@ import {
     eqTypeClass,
     numericTypeClass,
     ordTypeClass,
-    showTypeClass
+    showTypeClass,
+    stringTypeClass
 } from "@kithinji/nac";
 
 export const anyTypeClass = {
@@ -36,6 +37,13 @@ export const parse = (code: string): Types | void => {
     ])
 
     t.global.symbol_table.set("tc:Any", anyTypeClass);
+
+    t.global.symbol_table.set("tcon:string", [
+        anyTypeClass,
+        showTypeClass,
+        stringTypeClass,
+        eqTypeClass
+    ])
 
     t.global.symbol_table.set("tcon:integer", [
         anyTypeClass,

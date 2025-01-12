@@ -13,8 +13,8 @@ export const Client = () => {
             <div className="p-2 border-b flex items-center justify-center">
                 <Button
                     className="bg-sky-500 text-foreground"
-                    onClick={() => {
-                        addTab({
+                    onClick={async () => {
+                        await addTab({
                             id: -2,
                             uuid: requestUUID,
                             name: "New Request",

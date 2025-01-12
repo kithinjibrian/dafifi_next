@@ -4,7 +4,6 @@ import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Button } from "@/components/ui/button"
 import {
     Form,
     FormControl,
@@ -20,7 +19,8 @@ import { request } from "@/utils/request"
 import { useRouter } from "next/navigation"
 import { useProtectedRoute } from "@/hooks/useProtectedRoute"
 import { useAuthStore } from "@/store/auth"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { LoadingButton } from "@/components/utils/button"
 
 const formSchema = z.object({
     name: z.string().min(2).max(20),
@@ -28,6 +28,7 @@ const formSchema = z.object({
 })
 
 export default function NewProject() {
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const { user } = useProtectedRoute();
 
@@ -48,11 +49,14 @@ export default function NewProject() {
     })
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsLoading(true);
         try {
             const response = await request.post("/project", values);
             router.push(`/project/${response.data.id}`);
         } catch (e) {
 
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -104,9 +108,13 @@ export default function NewProject() {
                                 </FormItem>
                             )}
                         />
-                        <Button
+                        <LoadingButton
+                            isLoading={isLoading}
                             className="bg-sky-500 text-foreground"
-                            type="submit">Create Project</Button>
+                            type="submit"
+                        >
+                            Create Project
+                        </LoadingButton>
                     </form>
                 </Form>
             </div>
